@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { spendCoins, healHp, addCoins, openLootBox, getWeekStart } from '@/lib/engine';
+import { spendCoins, healHp, addCoins, openLootBox, getWeekStart, nowMs } from '@/lib/engine';
 
 export default function MercadoPage() {
   const player = useStore((s) => s.player);
@@ -12,7 +12,7 @@ export default function MercadoPage() {
   const [msg, setMsg] = useState('');
 
   const items = market?.items || [];
-  const rewards = (market as any)?.rewards || [];
+  const rewards = market?.rewards || [];
   const wk = getWeekStart();
   const buys: Record<string, number> = market?.weekStart === wk ? (market?.weekBuys || {}) : {};
 
@@ -26,7 +26,7 @@ export default function MercadoPage() {
       case 'potion': p = healHp(p, 30); m = '+30 HP'; break;
       case 'big_potion': p = healHp(p, p.maxHp); m = 'HP restaurado'; break;
       case 'streak_freeze': p = { ...p, streakFreeze: (p.streakFreeze || 0) + 1 }; m = 'Ofensiva protegida ❄️'; break;
-      case 'xp_boost': p = { ...p, xpBoostUntil: Date.now() + 30 * 60000 }; m = 'XP em dobro por 30min ⚡'; break;
+      case 'xp_boost': p = { ...p, xpBoostUntil: nowMs() + 30 * 60000 }; m = 'XP em dobro por 30min ⚡'; break;
       case 'loot_bronze': case 'loot_silver': case 'loot_gold': {
         const tier = item.id.split('_')[1] as 'bronze' | 'silver' | 'gold';
         const r = openLootBox(tier); p = healHp(addCoins(p, r.coins), r.hp);

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { uid } from '@/lib/engine';
 import { PRIORIDADES } from '@/lib/constants';
+import type { Prioridade } from '@/lib/types';
 
 export default function ComprasPage() {
   const compras = useStore((s) => s.compras);
@@ -26,7 +27,7 @@ export default function ComprasPage() {
 
   const addDesejo = () => {
     if (!dNome.trim()) return;
-    setCompras({ ...compras, desejos: [...compras.desejos, { id: uid(), nome: dNome.trim(), valor: parseFloat(dValor) || 0, prioridade: dPrio as any, comprado: false }] });
+    setCompras({ ...compras, desejos: [...compras.desejos, { id: uid(), nome: dNome.trim(), valor: parseFloat(dValor) || 0, prioridade: dPrio as Prioridade, comprado: false }] });
     setDNome(''); setDValor('');
   };
   const toggleDesejo = (id: string) =>

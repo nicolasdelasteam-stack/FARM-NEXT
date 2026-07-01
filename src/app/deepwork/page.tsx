@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
-import { uid } from '@/lib/engine';
+import { uid, rand } from '@/lib/engine';
 import { AMBIENT_SOUNDS, DEEPWORK_CHECKLIST } from '@/lib/constants';
 
 export default function DeepWorkPage() {
@@ -26,7 +26,7 @@ export default function DeepWorkPage() {
   const makeNoise = (ac: AudioContext) => {
     const buf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
     const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    for (let i = 0; i < d.length; i++) d[i] = rand() * 2 - 1;
     const s = ac.createBufferSource(); s.buffer = buf; s.loop = true; return s;
   };
   const toggleSound = (snd: { id: string; type: string; freq: number }) => {
@@ -87,6 +87,7 @@ export default function DeepWorkPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {(deepwork.metas || []).map((m) => (
             <div key={m.id} className="relative rounded-xl overflow-hidden bg-zinc-800 border border-zinc-700 min-h-24">
+              {/* eslint-disable-next-line @next/next/no-img-element -- imagem do mural é data-URL/URL livre; next/Image não se aplica */}
               {m.img && <img src={m.img} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60" />}
               <div className="relative p-3 flex items-end min-h-24">
                 <span className="text-sm font-semibold drop-shadow">{m.texto}</span>

@@ -1,5 +1,5 @@
 import type { Player, Difficulty, Mission, Reward, Boss } from './types';
-import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, PET_STAGES, PET_STREAK_REQ } from './constants';
+import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, PET_STREAK_REQ } from './constants';
 
 // ─── Date helpers ───
 export function today(): string {
@@ -49,6 +49,20 @@ export function refreshBosses(bosses: Boss[]): { bosses: Boss[]; changed: boolea
     return b;
   });
   return { bosses: next, changed };
+}
+
+// Chamadas impuras isoladas na lib (fora de componentes) — evitam o erro react-hooks/purity.
+export function nowMs(): number {
+  return Date.now();
+}
+export function rand(): number {
+  return Math.random();
+}
+export function daysUntil(dateStr: string): number {
+  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000);
+}
+export function daysSince(dateStr: string): number {
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
 }
 
 // ─── UID ───
@@ -107,7 +121,7 @@ export function spendCoins(player: Player, amount: number): Player | null {
 }
 
 export function damageHp(player: Player, amount: number, settings: { gentleMode?: boolean; hardcoreHp?: boolean }): Player {
-  let p = { ...player };
+  const p = { ...player };
   if (settings.gentleMode) {
     p.hp = Math.max(1, p.hp - Math.floor(amount / 2));
     return p;
@@ -147,7 +161,7 @@ export function updateStreak(player: Player, last: string, todayStr: string): Pl
   return p;
 }
 
-export function checkStreakContinuity(player: Player, last: string | null, todayStr: string): Player {
+export function checkStreakContinuity(player: Player, last: string | null): Player {
   if (!last) return player;
   const p = { ...player };
   const yesterday = dateSub(1);

@@ -6,7 +6,7 @@ import { useStore } from '@/lib/store';
 export default function CampoPage() {
   const missions = useStore((s) => s.missions);
   const [filter, setFilter] = useState<string>('all');
-  const [showForm, setShowForm] = useState(false);
+  const [, setShowForm] = useState(false);
 
   const today = new Date().toISOString().slice(0, 10);
   const filtered = missions.filter((m) => {

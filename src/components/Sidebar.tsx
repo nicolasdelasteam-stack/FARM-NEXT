@@ -53,7 +53,6 @@ export default function Sidebar() {
   const player = useStore((s) => s.player);
 
   const xpPct = Math.min(100, Math.round((player.xp / player.xpToNext) * 100));
-  const hpPct = Math.round(player.hp / player.maxHp * 100);
   const petStage = player.pet?.stage || 0;
 
   return (

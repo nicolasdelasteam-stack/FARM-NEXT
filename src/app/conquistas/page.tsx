@@ -6,7 +6,7 @@ import { checkAchievement } from '@/lib/engine';
 
 export default function ConquistasPage() {
   const player = useStore((s) => s.player);
-  const claimed = useStore((s) => (s as any).achievements) || [];
+  const claimed = useStore((s) => (s as { achievements?: string[] }).achievements) || [];
 
   return (
     <div className="max-w-xl">

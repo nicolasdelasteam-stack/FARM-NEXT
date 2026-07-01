@@ -7,7 +7,6 @@ import CloudSettings from '@/components/CloudSettings';
 export default function ConfigPage() {
   const player = useStore((s) => s.player);
   const settings = useStore((s) => s.settings);
-  const setPlayer = useStore((s) => s.setPlayer);
   const setSettings = useStore((s) => s.setSettings);
 
   return (

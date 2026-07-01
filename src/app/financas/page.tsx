@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { uid } from '@/lib/engine';
 import { PRIORIDADES } from '@/lib/constants';
+import type { Prioridade } from '@/lib/types';
 
 export default function FinancasPage() {
   const financas = useStore((s) => s.financas);
@@ -45,7 +46,7 @@ export default function FinancasPage() {
       ...financas,
       metas: [
         ...financas.metas,
-        { id: uid(), nome: mNome.trim(), icon: mIcon, alvo: parseFloat(mAlvo) || 0, guardado: 0, prioridade: mPrio as any },
+        { id: uid(), nome: mNome.trim(), icon: mIcon, alvo: parseFloat(mAlvo) || 0, guardado: 0, prioridade: mPrio as Prioridade },
       ],
     });
     setMNome(''); setMAlvo('');

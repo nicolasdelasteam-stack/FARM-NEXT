@@ -119,6 +119,7 @@ export default function DietaPage() {
             <label className="block text-xs text-zinc-500 mb-2">Foto (opcional)
               <input type="file" accept="image/*" onChange={onFoto} className="block w-full text-xs mt-1 text-zinc-400 file:mr-2 file:px-2 file:py-1 file:rounded file:border-0 file:bg-zinc-800 file:text-zinc-300" />
             </label>
+            {/* eslint-disable-next-line @next/next/no-img-element -- preview de foto é data-URL do navegador; next/Image não se aplica */}
             {foto && <img src={foto} alt="preview" className="w-16 h-16 object-cover rounded-lg mb-2" />}
             <button onClick={addPeso} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Registrar hoje</button>
             {last && (
@@ -136,6 +137,7 @@ export default function DietaPage() {
                 <div key={p.id} className="flex items-center justify-between text-sm border-b border-zinc-800 py-1">
                   <span className="text-zinc-500">{new Date(p.data).toLocaleDateString('pt-BR')}</span>
                   <div className="flex items-center gap-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- foto da pesagem é data-URL do navegador; next/Image não se aplica */}
                     {p.foto && <img src={p.foto} alt="" className="w-8 h-8 object-cover rounded" />}
                     <span className="font-semibold">{p.peso} kg{p.gordura != null ? ` · ${p.gordura}%` : ''}</span>
                   </div>

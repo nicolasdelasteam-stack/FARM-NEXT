@@ -34,7 +34,7 @@ export interface AppState {
   market: typeof INITIAL_MARKET;
   agua: { copos: number; meta: number; historico: Record<string, { copos: number; completou: boolean }> };
   lastDailyReset: string | null;
-  ligaData: any | null;
+  ligaData: unknown;
 
   // FARM-NEXT slices
   dieta: DietaState;
@@ -66,7 +66,7 @@ export interface AppState {
   setView: (view: string) => void;
   setAgua: (agua: AppState['agua']) => void;
   setLastDailyReset: (date: string | null) => void;
-  setLigaData: (data: any) => void;
+  setLigaData: (data: unknown) => void;
   addMission: (mission: Mission) => void;
   updateMission: (id: string, updates: Partial<Mission>) => void;
   removeMission: (id: string) => void;

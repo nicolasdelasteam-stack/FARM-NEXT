@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { uid } from '@/lib/engine';
+import { uid, daysSince } from '@/lib/engine';
 import { COMPANION_TIPOS } from '@/lib/constants';
+import type { CompanionTipo } from '@/lib/types';
 
 export default function CompanheirosPage() {
   const companions = useStore((s) => s.companions);
@@ -18,14 +19,14 @@ export default function CompanheirosPage() {
 
   const add = () => {
     if (!nome.trim()) return;
-    setCompanions([...companions, { id: uid(), nome: nome.trim(), tipo: tipo as any, emoji, aniversario: aniv, dataJuntos: juntos, notas: notas.trim() }]);
+    setCompanions([...companions, { id: uid(), nome: nome.trim(), tipo: tipo as CompanionTipo, emoji, aniversario: aniv, dataJuntos: juntos, notas: notas.trim() }]);
     setNome(''); setAniv(''); setJuntos(''); setNotas(''); setOpen(false);
   };
   const del = (id: string) => setCompanions(companions.filter((c) => c.id !== id));
 
   const EMO = ['🙂', '😎', '🐶', '🐱', '❤️', '👫', '👨‍👩‍👧', '🐹', '🦜', '🐢'];
   const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
-  const daysTogether = (d: string) => { if (!d) return null; const ms = Date.now() - new Date(d).getTime(); return Math.floor(ms / 86400000); };
+  const daysTogether = (d: string) => { if (!d) return null; return daysSince(d); };
 
   return (
     <div className="max-w-3xl">

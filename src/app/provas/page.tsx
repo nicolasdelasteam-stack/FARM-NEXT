@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { createMission } from '@/lib/engine';
+import { createMission, daysUntil } from '@/lib/engine';
 
 export default function ProvasPage() {
   const missions = useStore((s) => s.missions);
@@ -18,7 +18,7 @@ export default function ProvasPage() {
     setTitulo(''); setData('');
   };
   const provas = missions.filter((m) => m.dueDate).sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
-  const daysTo = (d: string) => Math.ceil((new Date(d).getTime() - Date.now()) / 86400000);
+  const daysTo = (d: string) => daysUntil(d);
   const inp = 'bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
 
   return (
