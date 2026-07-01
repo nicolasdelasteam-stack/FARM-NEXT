@@ -1,21 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #09090b;
-  --surface: #18181b;
+  /* Tema Solo Leveling — Monarca das Sombras (Sung Jinwoo):
+     preto/azul-noite + índigo elétrico do "Sistema" + brilho azul. */
+  --bg: #08080d;
+  --surface: #131320;
   --surface-2: #27272a;
-  --primary: #a885f6;
-  --primary-bright: #c4a8ff;
+  --primary: #6366f1;        /* índigo elétrico */
+  --primary-bright: #818cf8;
+  --system-blue: #3b82f6;    /* azul das janelas do Sistema */
   --hp: #fb6a8a;
   --gold: #fbbf24;
   --success: #22c55e;
   --muted: #71717a;
 }
 
-* { scrollbar-width: thin; scrollbar-color: #27272a transparent; }
+* { scrollbar-width: thin; scrollbar-color: #312e81 transparent; }
 
 body {
-  background: var(--bg);
+  background:
+    radial-gradient(900px 500px at 15% -5%, rgba(99, 102, 241, 0.10), transparent 60%),
+    radial-gradient(800px 500px at 100% 0%, rgba(59, 130, 246, 0.08), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
   color: #f4f4f5;
   font-family: system-ui, -apple-system, sans-serif;
 }

@@ -35,7 +35,7 @@ export default function BossPage() {
   });
 
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 4000); };
-  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
   const EMO = ['👿', '🌀', '🌑', '📱', '🔥', '🛋️', '🍩', '💀', '🐉', '👹', '🧟', '⚰️', '👺', '🦑', '🕷️', '🐍', '🦂', '🩸'];
 
   // Reset de recorrentes + penalidade por prazo vencido (roda no mount).
@@ -113,21 +113,21 @@ export default function BossPage() {
     <div className="max-w-3xl">
       <div className="flex justify-between items-center mb-1">
         <h1 className="text-xl font-black">⚔️ Boss Fight</h1>
-        <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Boss'}</button>
+        <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Boss'}</button>
       </div>
       <p className="text-sm text-zinc-500 mb-4">Chefes semanais/mensais da vida real. Derrote no prazo para ganhar a recompensa (vai pro inventário); se o prazo vencer, você toma a penalidade.</p>
 
-      {msg && <div className="mb-4 p-2 rounded-lg bg-violet-950/50 border border-violet-800/50 text-sm text-violet-200 text-center">{msg}</div>}
+      {msg && <div className="mb-4 p-2 rounded-lg bg-indigo-950/50 border border-indigo-800/50 text-sm text-indigo-200 text-center">{msg}</div>}
 
       {open && (
         <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 mb-5">
           <div className="flex gap-1.5 flex-wrap items-center">
-            {EMO.map((e) => <button key={e} onClick={() => setF({ ...f, icon: e })} className={`w-9 h-9 rounded-lg text-lg ${f.icon === e ? 'bg-violet-600' : 'bg-zinc-800'}`}>{e}</button>)}
+            {EMO.map((e) => <button key={e} onClick={() => setF({ ...f, icon: e })} className={`w-9 h-9 rounded-lg text-lg ${f.icon === e ? 'bg-indigo-600' : 'bg-zinc-800'}`}>{e}</button>)}
             <BossIcon icon={f.icon} className="w-9 h-9 flex items-center justify-center text-lg rounded-lg bg-zinc-800" imgClass="w-9 h-9" />
           </div>
           <div className="flex gap-2">
             <input className={`${inp} flex-1`} placeholder="Colar emoji (ex: 👾) ou deixar acima" value={isImg(f.icon) ? '' : f.icon} onChange={(e) => setF({ ...f, icon: e.target.value || '👿' })} />
-            <label className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-xs cursor-pointer hover:border-violet-500 flex items-center whitespace-nowrap">
+            <label className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-xs cursor-pointer hover:border-indigo-500 flex items-center whitespace-nowrap">
               🖼️ Imagem/GIF
               <input type="file" accept="image/*" className="hidden" onChange={(e) => onImg(e.target.files?.[0])} />
             </label>
@@ -156,14 +156,14 @@ export default function BossPage() {
             <input className={inp} type="number" placeholder="Moedas" value={f.recompensaCoins} onChange={(e) => setF({ ...f, recompensaCoins: parseInt(e.target.value) || 0 })} />
             <input className={inp} type="number" placeholder="XP" value={f.recompensaXp} onChange={(e) => setF({ ...f, recompensaXp: parseInt(e.target.value) || 0 })} />
           </div>
-          <button onClick={addBoss} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Invocar boss</button>
+          <button onClick={addBoss} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">Invocar boss</button>
         </div>
       )}
 
       <div className="flex gap-2 mb-4">
         {(['ativos', 'bestiario'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${tab === t ? 'bg-violet-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>
+            className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${tab === t ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>
             {t === 'ativos' ? `⚔️ Ativos (${ativos.length})` : `📖 Bestiário (${derrotados.length})`}
           </button>
         ))}
@@ -171,7 +171,7 @@ export default function BossPage() {
 
       {tab === 'bestiario' && derrotados.length > 0 && (
         <div className="mb-3 p-3 rounded-xl bg-gradient-to-br from-yellow-950/30 to-zinc-900 border border-yellow-800/40 text-sm">
-          🏆 Recompensas acumuladas dos bosses derrotados: <b className="text-yellow-400">🪙 {totalCoins}</b> · <b className="text-violet-300">⭐ {totalXp} XP</b>. Os itens ficam em <b>Eventos → Inventário</b>.
+          🏆 Recompensas acumuladas dos bosses derrotados: <b className="text-yellow-400">🪙 {totalCoins}</b> · <b className="text-indigo-300">⭐ {totalXp} XP</b>. Os itens ficam em <b>Eventos → Inventário</b>.
         </div>
       )}
 

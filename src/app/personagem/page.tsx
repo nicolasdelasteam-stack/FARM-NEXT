@@ -9,7 +9,7 @@ const AVATARS = ['🦊', '🐉', '🦅', '🐺', '🦁', '🐱', '🐲', '🦄',
 function Avatar({ photo, emoji, size }: { photo?: string; emoji: string; size: string }) {
   if (photo) {
     // eslint-disable-next-line @next/next/no-img-element -- foto/gif de perfil enviada pelo usuário (data-URL)
-    return <img src={photo} alt="" className={`${size} object-cover rounded-full border-2 border-violet-600`} />;
+    return <img src={photo} alt="" className={`${size} object-cover rounded-full border-2 border-indigo-600`} />;
   }
   return <span className={size + ' flex items-center justify-center'} style={{ fontSize: '2.6rem' }}>{emoji}</span>;
 }
@@ -59,13 +59,13 @@ export default function PersonagemPage() {
     reader.readAsDataURL(file);
   };
 
-  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
 
   return (
     <div className="space-y-4 max-w-2xl">
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-black">👤 Personagem</h1>
-        <button onClick={openEdit} className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Editar Perfil</button>
+        <button onClick={openEdit} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">Editar Perfil</button>
       </div>
 
       {/* Avatar & Title */}
@@ -79,7 +79,7 @@ export default function PersonagemPage() {
               <span>XP</span><span>{player.xp}/{player.xpToNext}</span>
             </div>
             <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
-              <div className="h-full bg-violet-500 rounded-full transition-all" style={{ width: `${xpPct}%` }} />
+              <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${xpPct}%` }} />
             </div>
             <p className="text-[11px] text-zinc-600 mt-0.5">{player.xpToNext - player.xp} XP para o próximo nível</p>
           </div>
@@ -107,7 +107,7 @@ export default function PersonagemPage() {
         <h3 className="font-bold text-sm mb-2">🎯 Meus Objetivos</h3>
         {(player.objetivoPrincipal || player.objetivoSecundario) ? (
           <div className="space-y-1.5 text-sm">
-            {player.objetivoPrincipal && <p><span className="text-violet-400">▸ Principal:</span> {player.objetivoPrincipal}</p>}
+            {player.objetivoPrincipal && <p><span className="text-indigo-400">▸ Principal:</span> {player.objetivoPrincipal}</p>}
             {player.objetivoSecundario && <p><span className="text-sky-400">▸ Secundário:</span> {player.objetivoSecundario}</p>}
           </div>
         ) : <p className="text-xs text-zinc-500">Defina seus objetivos em <b>Editar Perfil</b>.</p>}
@@ -127,7 +127,7 @@ export default function PersonagemPage() {
                   <span>{name}</span><span>Lv. {lv}</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
-                  <div className="h-full bg-violet-500 rounded-full" style={{ width: `${pct}%` }} />
+                  <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${pct}%` }} />
                 </div>
               </div>
             );
@@ -194,9 +194,9 @@ export default function PersonagemPage() {
       {/* Modal Editar Perfil */}
       {edit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setEdit(false)}>
-          <div className="w-full max-w-md rounded-2xl bg-zinc-900 border border-violet-800/50 p-5 space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-2xl bg-zinc-900 border border-indigo-800/50 p-5 space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-black text-violet-300">Editar Perfil</h2>
+              <h2 className="text-lg font-black text-indigo-300">Editar Perfil</h2>
               <button onClick={() => setEdit(false)} className="text-zinc-500 hover:text-zinc-300 text-lg">✕</button>
             </div>
 
@@ -204,7 +204,7 @@ export default function PersonagemPage() {
             <div className="flex items-center gap-4">
               <Avatar photo={dPhoto} emoji={dAvatar} size="w-20 h-20 text-6xl" />
               <div className="flex-1 space-y-2">
-                <label className="block px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-xs cursor-pointer hover:border-violet-500 text-center">
+                <label className="block px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-xs cursor-pointer hover:border-indigo-500 text-center">
                   🖼️ Enviar imagem / GIF
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => onPhoto(e.target.files?.[0])} />
                 </label>
@@ -213,7 +213,7 @@ export default function PersonagemPage() {
             </div>
             {!dPhoto && (
               <div className="flex gap-1.5 flex-wrap">
-                {AVATARS.map((a) => <button key={a} onClick={() => setDAvatar(a)} className={`w-9 h-9 rounded-lg text-lg ${dAvatar === a ? 'bg-violet-600' : 'bg-zinc-800'}`}>{a}</button>)}
+                {AVATARS.map((a) => <button key={a} onClick={() => setDAvatar(a)} className={`w-9 h-9 rounded-lg text-lg ${dAvatar === a ? 'bg-indigo-600' : 'bg-zinc-800'}`}>{a}</button>)}
               </div>
             )}
 
@@ -229,7 +229,7 @@ export default function PersonagemPage() {
 
             <div className="flex gap-2">
               <button onClick={() => setEdit(false)} className="flex-1 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-semibold">Cancelar</button>
-              <button onClick={salvar} className="flex-1 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Salvar</button>
+              <button onClick={salvar} className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">Salvar</button>
             </div>
           </div>
         </div>

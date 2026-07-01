@@ -23,7 +23,7 @@ export default function PlanejamentoPage() {
   const pct = pl.metas.length ? Math.round((done / pl.metas.length) * 100) : 0;
   const discVals = MESES.map((_m, i) => pl.disciplina[String(i)] || 0);
   const media = Math.round(discVals.reduce((a, b) => a + b, 0) / 12);
-  const inp = 'flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
 
   return (
     <div className="max-w-3xl">
@@ -34,7 +34,7 @@ export default function PlanejamentoPage() {
         <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
           <div className="flex justify-between items-center mb-2"><div className="text-sm font-bold">🎯 Metas do ano</div><span className="text-xs text-emerald-400">{done}/{pl.metas.length} · {pct}%</span></div>
           <div className="h-2 rounded-full bg-zinc-800 overflow-hidden mb-3"><div className="h-full bg-emerald-500" style={{ width: `${pct}%` }} /></div>
-          <div className="flex gap-2 mb-2"><input className={inp} placeholder="Nova meta do ano" value={meta} onChange={(e) => setMeta(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addMeta()} /><button onClick={addMeta} className="px-3 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+</button></div>
+          <div className="flex gap-2 mb-2"><input className={inp} placeholder="Nova meta do ano" value={meta} onChange={(e) => setMeta(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addMeta()} /><button onClick={addMeta} className="px-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+</button></div>
           <div className="space-y-1">
             {pl.metas.map((m) => (
               <div key={m.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-zinc-800/50">
@@ -48,7 +48,7 @@ export default function PlanejamentoPage() {
 
         <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
           <div className="text-sm font-bold mb-2">⭐ Prioridades do ano</div>
-          <div className="flex gap-2 mb-2"><input className={inp} placeholder="Ex: Saúde em primeiro lugar" value={prio} onChange={(e) => setPrio(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addPrio()} /><button onClick={addPrio} className="px-3 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+</button></div>
+          <div className="flex gap-2 mb-2"><input className={inp} placeholder="Ex: Saúde em primeiro lugar" value={prio} onChange={(e) => setPrio(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addPrio()} /><button onClick={addPrio} className="px-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+</button></div>
           <ol className="space-y-1 list-decimal list-inside">
             {pl.prioridades.map((p, i) => (
               <li key={i} className="text-sm flex items-center gap-2"><span className="flex-1">{p}</span><button onClick={() => delPrio(i)} className="text-zinc-600 hover:text-red-400 text-xs">✕</button></li>
@@ -58,11 +58,11 @@ export default function PlanejamentoPage() {
       </div>
 
       <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
-        <div className="flex justify-between items-center mb-3"><div className="text-sm font-bold">📊 Disciplina mensal</div><span className="text-xs text-zinc-500">Média anual: <b className="text-violet-300">{media}%</b></span></div>
+        <div className="flex justify-between items-center mb-3"><div className="text-sm font-bold">📊 Disciplina mensal</div><span className="text-xs text-zinc-500">Média anual: <b className="text-indigo-300">{media}%</b></span></div>
         <div className="grid grid-cols-6 md:grid-cols-12 gap-2">
           {MESES.map((mes, i) => (
             <div key={mes} className="text-center">
-              <div className="h-24 flex items-end mb-1"><div className="w-full bg-violet-600/60 rounded-t" style={{ height: `${discVals[i]}%` }} /></div>
+              <div className="h-24 flex items-end mb-1"><div className="w-full bg-indigo-600/60 rounded-t" style={{ height: `${discVals[i]}%` }} /></div>
               <input type="number" min={0} max={100} value={pl.disciplina[String(i)] || 0} onChange={(e) => setDisc(i, Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} className="w-full bg-zinc-800 border border-zinc-700 rounded px-1 py-0.5 text-xs text-center" />
               <div className="text-[10px] text-zinc-600 mt-0.5">{mes}</div>
             </div>

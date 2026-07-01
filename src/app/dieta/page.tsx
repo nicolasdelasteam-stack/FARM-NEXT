@@ -60,7 +60,7 @@ export default function DietaPage() {
   const diff = first && last ? (last.peso - first.peso) : 0;
   const tags = [...new Set(dieta.receitas.map((r) => r.tag))];
 
-  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
 
   return (
     <div className="max-w-3xl">
@@ -69,7 +69,7 @@ export default function DietaPage() {
       <div className="flex gap-2 mb-5">
         {(['refeicoes', 'peso', 'receitas'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${tab === t ? 'bg-violet-600 text-white' : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200'}`}>
+            className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${tab === t ? 'bg-indigo-600 text-white' : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200'}`}>
             {t === 'refeicoes' ? 'Refeições' : t === 'peso' ? 'Progresso' : 'Receitas'}
           </button>
         ))}
@@ -80,14 +80,14 @@ export default function DietaPage() {
           <div className="flex gap-1.5 flex-wrap mb-4">
             {WEEK_DAYS.map((d) => (
               <button key={d} onClick={() => setDia(d)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold ${dia === d ? 'bg-violet-600/30 text-violet-300 border border-violet-600' : 'bg-zinc-900 border border-zinc-800 text-zinc-400'}`}>{d}</button>
+                className={`px-3 py-1 rounded-lg text-xs font-semibold ${dia === d ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-600' : 'bg-zinc-900 border border-zinc-800 text-zinc-400'}`}>{d}</button>
             ))}
           </div>
           <div className="space-y-2 mb-5">
             {refsDia.length === 0 && <p className="text-sm text-zinc-600">Nenhuma refeição para {dia}.</p>}
             {refsDia.map((r) => (
               <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900 border border-zinc-800">
-                <span className="text-xs font-mono text-violet-400 w-12">{r.horario}</span>
+                <span className="text-xs font-mono text-indigo-400 w-12">{r.horario}</span>
                 <div className="flex-1">
                   <div className="text-xs text-zinc-500">{r.tipo}</div>
                   <div className="text-sm">{r.descricao}</div>
@@ -103,7 +103,7 @@ export default function DietaPage() {
               <select className={inp} value={tipo} onChange={(e) => setTipo(e.target.value)}>{MEAL_TYPES.map((m) => <option key={m}>{m}</option>)}</select>
             </div>
             <input className={inp} placeholder="Ex: 3 ovos + aveia + café" value={desc} onChange={(e) => setDesc(e.target.value)} />
-            <button onClick={addRefeicao} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+ Adicionar</button>
+            <button onClick={addRefeicao} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+ Adicionar</button>
           </div>
         </div>
       )}
@@ -121,7 +121,7 @@ export default function DietaPage() {
             </label>
             {/* eslint-disable-next-line @next/next/no-img-element -- preview de foto é data-URL do navegador; next/Image não se aplica */}
             {foto && <img src={foto} alt="preview" className="w-16 h-16 object-cover rounded-lg mb-2" />}
-            <button onClick={addPeso} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Registrar hoje</button>
+            <button onClick={addPeso} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">Registrar hoje</button>
             {last && (
               <div className="mt-4 text-center">
                 <div className="text-3xl font-black">{last.peso} <span className="text-sm font-normal text-zinc-500">kg</span></div>
@@ -157,7 +157,7 @@ export default function DietaPage() {
               <input className={inp} placeholder="Grupo/tag (ex: Café da manhã)" value={rTag} onChange={(e) => setRTag(e.target.value)} />
             </div>
             <textarea className={inp} rows={2} placeholder="Ingredientes / modo de preparo" value={rIng} onChange={(e) => setRIng(e.target.value)} />
-            <button onClick={addReceita} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+ Salvar receita</button>
+            <button onClick={addReceita} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+ Salvar receita</button>
           </div>
           {tags.map((tg) => (
             <div key={tg} className="mb-4">

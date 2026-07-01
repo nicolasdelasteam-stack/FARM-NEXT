@@ -25,7 +25,7 @@ export default function CompanheirosPage() {
   const del = (id: string) => setCompanions(companions.filter((c) => c.id !== id));
 
   const EMO = ['🙂', '😎', '🐶', '🐱', '❤️', '👫', '👨‍👩‍👧', '🐹', '🦜', '🐢'];
-  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
   const daysTogether = (d: string) => { if (!d) return null; return daysSince(d); };
 
   return (
@@ -35,7 +35,7 @@ export default function CompanheirosPage() {
           <h1 className="text-xl font-black">🐾 Companheiros</h1>
           <p className="text-sm text-zinc-500">Amigos, pets e pessoas queridas.</p>
         </div>
-        <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Adicionar'}</button>
+        <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Adicionar'}</button>
       </div>
 
       {open && (
@@ -47,14 +47,14 @@ export default function CompanheirosPage() {
             </select>
           </div>
           <div className="flex gap-1.5 flex-wrap">
-            {EMO.map((e) => <button key={e} onClick={() => setEmoji(e)} className={`w-9 h-9 rounded-lg text-lg ${emoji === e ? 'bg-violet-600' : 'bg-zinc-800'}`}>{e}</button>)}
+            {EMO.map((e) => <button key={e} onClick={() => setEmoji(e)} className={`w-9 h-9 rounded-lg text-lg ${emoji === e ? 'bg-indigo-600' : 'bg-zinc-800'}`}>{e}</button>)}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div><label className="text-xs text-zinc-500">Aniversário</label><input className={inp} type="date" value={aniv} onChange={(e) => setAniv(e.target.value)} /></div>
             <div><label className="text-xs text-zinc-500">Juntos desde</label><input className={inp} type="date" value={juntos} onChange={(e) => setJuntos(e.target.value)} /></div>
           </div>
           <textarea className={inp} rows={2} placeholder="Notas (gostos, lembretes...)" value={notas} onChange={(e) => setNotas(e.target.value)} />
-          <button onClick={add} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Salvar companheiro</button>
+          <button onClick={add} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">Salvar companheiro</button>
         </div>
       )}
 

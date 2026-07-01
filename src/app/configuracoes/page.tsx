@@ -35,7 +35,7 @@ export default function ConfigPage() {
           {[50, 100, 150, 200, 500].map((v) => (
             <button key={v} onClick={() => setSettings({ ...settings, dailyXpGoal: v })}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                settings.dailyXpGoal === v ? 'bg-violet-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                settings.dailyXpGoal === v ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
               }`}>
               {v}
             </button>
@@ -50,7 +50,7 @@ export default function ConfigPage() {
             <label key={key} className="flex items-center justify-between cursor-pointer">
               <span className="text-zinc-400">{settingsLabel(key)}</span>
               <input type="checkbox" checked={settings[key] as boolean} onChange={() => setSettings({ ...settings, [key]: !settings[key] })}
-                className="w-4 h-4 accent-violet-500" />
+                className="w-4 h-4 accent-indigo-500" />
             </label>
           ))}
         </div>

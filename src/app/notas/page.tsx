@@ -27,20 +27,20 @@ export default function NotasPage() {
     <div className="max-w-xl space-y-4">
       <h1 className="text-xl font-black">📝 Notas</h1>
       <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2">
-        <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm outline-none focus:border-violet-500" placeholder="Título" />
-        <textarea value={content} onChange={(e) => setContent(e.target.value)} className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm h-20 outline-none focus:border-violet-500" placeholder="Conteúdo..." />
+        <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm outline-none focus:border-indigo-500" placeholder="Título" />
+        <textarea value={content} onChange={(e) => setContent(e.target.value)} className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm h-20 outline-none focus:border-indigo-500" placeholder="Conteúdo..." />
         <div className="flex gap-2">
           <select value={cat} onChange={(e) => setCat(e.target.value)} className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm">
             {cats.map((c) => <option key={c}>{c}</option>)}
           </select>
-          <button onClick={addNote} className="px-4 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Salvar</button>
+          <button onClick={addNote} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">Salvar</button>
         </div>
       </div>
 
       <div className="flex gap-1.5 flex-wrap">
         {['Todas', ...cats].map((c) => (
           <button key={c} onClick={() => setFiltro(c)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-medium ${filtro === c ? 'bg-violet-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>{c}</button>
+            className={`px-2.5 py-1 rounded-lg text-xs font-medium ${filtro === c ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>{c}</button>
         ))}
       </div>
 

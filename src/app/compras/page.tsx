@@ -38,7 +38,7 @@ export default function ComprasPage() {
   const totalDesejos = compras.desejos.filter((d) => !d.comprado).reduce((a, d) => a + d.valor, 0);
   const ICONS = ['🛒', '🥛', '🍎', '🍞', '🥩', '🧻', '🧴', '🥦', '🍚', '🧊'];
   const ordem = ['urgente', 'algum_dia', 'pode_esperar'];
-  const inp = 'bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
 
   return (
     <div className="max-w-3xl">
@@ -53,7 +53,7 @@ export default function ComprasPage() {
           <div className="flex gap-2 mb-2">
             <select className={inp} value={icon} onChange={(e) => setIcon(e.target.value)}>{ICONS.map((i) => <option key={i}>{i}</option>)}</select>
             <input className={`${inp} flex-1`} placeholder="Produto" value={nome} onChange={(e) => setNome(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addMercado()} />
-            <button onClick={addMercado} className="px-3 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+</button>
+            <button onClick={addMercado} className="px-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+</button>
           </div>
           <div className="space-y-1">
             {compras.mercado.length === 0 && <p className="text-sm text-zinc-600 py-2">Lista vazia.</p>}
@@ -79,7 +79,7 @@ export default function ComprasPage() {
               <select className={`${inp} flex-1`} value={dPrio} onChange={(e) => setDPrio(e.target.value)}>
                 {ordem.map((p) => <option key={p} value={p}>{PRIORIDADES[p].label}</option>)}
               </select>
-              <button onClick={addDesejo} className="px-3 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+</button>
+              <button onClick={addDesejo} className="px-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+</button>
             </div>
           </div>
           <div className="space-y-1.5">

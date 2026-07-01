@@ -19,7 +19,7 @@ export default function ProvasPage() {
   };
   const provas = missions.filter((m) => m.dueDate).sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
   const daysTo = (d: string) => daysUntil(d);
-  const inp = 'bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
 
   return (
     <div className="max-w-2xl">
@@ -30,7 +30,7 @@ export default function ProvasPage() {
         <div className="flex gap-2">
           <input className={inp + ' flex-1'} placeholder="Ex: Prova de Anatomia" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
           <input className={inp} type="date" value={data} onChange={(e) => setData(e.target.value)} />
-          <button onClick={add} className="px-4 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+ Agendar</button>
+          <button onClick={add} className="px-4 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+ Agendar</button>
         </div>
       </div>
 

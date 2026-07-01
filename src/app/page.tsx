@@ -75,7 +75,7 @@ export default function DashboardPage() {
           <div className="font-bold text-lg mb-1">Reviver com {reviveCost} moedas</div>
           <p className="text-zinc-500 text-sm mb-4">Você revive com 50% do HP max.</p>
           <button onClick={revive} disabled={player.coins < reviveCost}
-            className="px-6 py-2 rounded-lg font-bold text-sm bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed">
+            className="px-6 py-2 rounded-lg font-bold text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed">
             {player.coins < reviveCost ? 'Moedas insuficientes' : 'Reviver'}
           </button>
           <p className="mt-3 text-sm text-zinc-500">Moedas: {player.coins}</p>
@@ -86,7 +86,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4">
-      {msg && <div className="p-2 rounded-lg bg-violet-950/50 border border-violet-800/50 text-sm text-violet-200 text-center">{msg}</div>}
+      {msg && <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-800/50 text-sm text-indigo-200 text-center">{msg}</div>}
 
       {hpPct <= 25 && hpPct > 0 && (
         <div className="p-3 rounded-lg bg-red-900/20 border border-red-800/30 text-red-400 font-semibold text-sm animate-pulse">
@@ -122,7 +122,7 @@ export default function DashboardPage() {
           <span className="text-xs text-zinc-500">{player.xp}/{player.xpToNext} XP</span>
         </div>
         <div className="h-2 rounded-full bg-zinc-800 overflow-hidden mb-4">
-          <div className="h-full bg-violet-500 rounded-full transition-all" style={{ width: `${xpPct}%` }} />
+          <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${xpPct}%` }} />
         </div>
         <div className="text-[11px] text-zinc-500 mb-2 uppercase tracking-wider">Marcos de Evolução · ofensiva</div>
         <div className="flex items-center justify-between">
@@ -130,8 +130,8 @@ export default function DashboardPage() {
             const reached = best >= mst.d;
             return (
               <div key={mst.d} className="flex-1 flex flex-col items-center relative">
-                {i > 0 && <div className={`absolute top-4 right-1/2 w-full h-0.5 ${reached ? 'bg-violet-600' : 'bg-zinc-800'}`} />}
-                <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-sm ${reached ? 'bg-violet-600' : 'bg-zinc-800 grayscale opacity-60'}`}>{mst.icon}</div>
+                {i > 0 && <div className={`absolute top-4 right-1/2 w-full h-0.5 ${reached ? 'bg-indigo-600' : 'bg-zinc-800'}`} />}
+                <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-sm ${reached ? 'bg-indigo-600' : 'bg-zinc-800 grayscale opacity-60'}`}>{mst.icon}</div>
                 <div className="text-[9px] text-zinc-500 mt-1 text-center leading-tight">{mst.label}</div>
                 <div className="text-[9px] text-zinc-600">{mst.d}d</div>
               </div>
@@ -173,7 +173,7 @@ export default function DashboardPage() {
       <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
         <div className="flex justify-between items-center mb-2">
           <h3 className="font-bold text-sm">✅ Missões pendentes</h3>
-          <Link href="/campo" className="text-xs text-violet-400 hover:text-violet-300">ver todas →</Link>
+          <Link href="/campo" className="text-xs text-indigo-400 hover:text-indigo-300">ver todas →</Link>
         </div>
         {pendentes.length === 0 ? (
           <p className="text-xs text-zinc-500 py-2">Tudo concluído! Crie novas missões no Campo.</p>
@@ -181,10 +181,10 @@ export default function DashboardPage() {
           <div className="space-y-1.5">
             {pendentes.map((m) => (
               <div key={m.id} className="flex items-center gap-2 p-2 rounded-lg bg-zinc-800/40">
-                <button onClick={() => concluir(m.id)} title="Concluir" className="w-5 h-5 rounded-full border-2 border-zinc-600 hover:border-violet-400 shrink-0" />
+                <button onClick={() => concluir(m.id)} title="Concluir" className="w-5 h-5 rounded-full border-2 border-zinc-600 hover:border-indigo-400 shrink-0" />
                 <span className="text-sm flex-1 truncate">{m.title}</span>
                 {m.dueDate === todayStr && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/40 text-amber-300">hoje</span>}
-                <span className="text-xs text-violet-400 font-semibold shrink-0">+{m.reward.xp}XP</span>
+                <span className="text-xs text-indigo-400 font-semibold shrink-0">+{m.reward.xp}XP</span>
               </div>
             ))}
           </div>
@@ -196,7 +196,7 @@ export default function DashboardPage() {
         <div className="text-[11px] text-zinc-500 mb-2 uppercase tracking-wider">Acesso rápido</div>
         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
           {ATALHOS.map((a) => (
-            <Link key={a.href} href={a.href} className="flex flex-col items-center gap-1 p-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-violet-700 transition-colors">
+            <Link key={a.href} href={a.href} className="flex flex-col items-center gap-1 p-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-indigo-700 transition-colors">
               <span className="text-xl">{a.icon}</span>
               <span className="text-[10px] text-zinc-400">{a.label}</span>
             </Link>

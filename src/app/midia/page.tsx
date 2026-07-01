@@ -31,7 +31,7 @@ export default function MidiaPage() {
   const [status, setStatus] = useState<MidiaStatus>('quero_assistir');
   const [temporadas, setTemporadas] = useState('1');
 
-  const inp = 'bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
 
   const add = () => {
     if (!titulo.trim()) return;
@@ -68,14 +68,14 @@ export default function MidiaPage() {
     <div className="max-w-3xl">
       <div className="flex justify-between items-center mb-1">
         <h1 className="text-xl font-black">🎬 Mídia</h1>
-        <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Adicionar'}</button>
+        <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Adicionar'}</button>
       </div>
       <p className="text-sm text-zinc-500 mb-4">Filmes, séries e animes — avaliação, status e progresso de temporadas.</p>
 
       {open && (
         <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 mb-5">
           <div className="flex gap-1.5 flex-wrap">
-            {CAPAS.map((c) => <button key={c} onClick={() => setCapa(c)} className={`w-9 h-9 rounded-lg text-lg ${capa === c ? 'bg-violet-600' : 'bg-zinc-800'}`}>{c}</button>)}
+            {CAPAS.map((c) => <button key={c} onClick={() => setCapa(c)} className={`w-9 h-9 rounded-lg text-lg ${capa === c ? 'bg-indigo-600' : 'bg-zinc-800'}`}>{c}</button>)}
           </div>
           <input className={`${inp} w-full`} placeholder="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
           <div className="flex gap-2">
@@ -87,14 +87,14 @@ export default function MidiaPage() {
             </select>
             {grupo !== 'filme' && <input className={`${inp} w-28`} type="number" min={1} placeholder="Temporadas" value={temporadas} onChange={(e) => setTemporadas(e.target.value)} />}
           </div>
-          <button onClick={add} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Adicionar</button>
+          <button onClick={add} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">Adicionar</button>
         </div>
       )}
 
       <div className="flex gap-1.5 flex-wrap mb-4">
         {FILTROS.map((f) => (
           <button key={f.key} onClick={() => setFiltro(f.key)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-medium ${filtro === f.key ? 'bg-violet-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>{f.label}</button>
+            className={`px-2.5 py-1 rounded-lg text-xs font-medium ${filtro === f.key ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>{f.label}</button>
         ))}
       </div>
 
@@ -112,7 +112,7 @@ export default function MidiaPage() {
                     <div className="font-bold text-sm truncate">{m.titulo}</div>
                     <button onClick={() => del(m.id)} className="text-zinc-700 hover:text-red-400 text-xs shrink-0">✕</button>
                   </div>
-                  <div className="text-[10px] uppercase tracking-wide text-violet-400">{GRUPO[m.grupo].icon} {GRUPO[m.grupo].label}</div>
+                  <div className="text-[10px] uppercase tracking-wide text-indigo-400">{GRUPO[m.grupo].icon} {GRUPO[m.grupo].label}</div>
                   <div className="flex items-center gap-0.5 mt-1">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <button key={s} onClick={() => patch(m.id, { estrelas: m.estrelas === s ? 0 : s })} className="text-sm leading-none">
@@ -139,7 +139,7 @@ export default function MidiaPage() {
                     <span className={STATUS[m.status].color}>{pct}%</span>
                   </div>
                   <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-1">
-                    <div className="h-full bg-violet-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
                   </div>
                   <div className="flex gap-1">
                     <button onClick={() => patch(m.id, { vistas: Math.max(0, m.vistas - 1) })} className="px-2 py-0.5 text-xs bg-zinc-800 hover:bg-zinc-700 rounded">−</button>

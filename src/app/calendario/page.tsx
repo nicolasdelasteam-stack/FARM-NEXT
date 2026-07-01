@@ -39,7 +39,7 @@ export default function CalendarioPage() {
     const isStrk = streakDays.includes(ds);
     cells.push(
       <button key={day} onClick={() => setDetail(detail === ds ? null : ds)}
-        className={`p-2 rounded-lg text-center text-sm transition-colors ${isToday ? 'ring-2 ring-violet-500 bg-violet-900/20' : 'hover:bg-zinc-800'} ${hasM ? 'font-semibold' : ''}`}>
+        className={`p-2 rounded-lg text-center text-sm transition-colors ${isToday ? 'ring-2 ring-indigo-500 bg-indigo-900/20' : 'hover:bg-zinc-800'} ${hasM ? 'font-semibold' : ''}`}>
         <div>{day}</div>
         <div className="flex justify-center gap-0.5 text-[8px]">
           {hasM && <span className="text-emerald-400">●</span>}

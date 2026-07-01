@@ -23,7 +23,7 @@ export default function CasaPage() {
   const delLembrete = (id: string) => setCasa({ ...casa, lembretes: casa.lembretes.filter((l) => l.id !== id) });
 
   const EMO = ['🚗', '🐶', '🌱', '🏠', '🛋️', '🍽️', '🧹', '🪴', '🐱', '🧺'];
-  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
 
   return (
     <div className="max-w-3xl">
@@ -47,7 +47,7 @@ export default function CasaPage() {
           <input className={inp} placeholder="Objetivo" value={aObj} onChange={(e) => setAObj(e.target.value)} />
           <input className={inp} placeholder="Tarefa" value={aTar} onChange={(e) => setATar(e.target.value)} />
         </div>
-        <button onClick={addArea} className="w-full mt-2 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+ Adicionar área</button>
+        <button onClick={addArea} className="w-full mt-2 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+ Adicionar área</button>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -56,7 +56,7 @@ export default function CasaPage() {
           <div className="flex gap-2 mb-2">
             <input className={inp} placeholder="Ex: Lavar o banheiro" value={tNome} onChange={(e) => setTNome(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTarefa()} />
             <select className="bg-zinc-800 border border-zinc-700 rounded px-2 text-sm" value={tFreq} onChange={(e) => setTFreq(e.target.value)}>{FREQS.map((f) => <option key={f}>{f}</option>)}</select>
-            <button onClick={addTarefa} className="px-3 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+</button>
+            <button onClick={addTarefa} className="px-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+</button>
           </div>
           <div className="space-y-1">
             {casa.tarefas.map((t) => (
@@ -72,7 +72,7 @@ export default function CasaPage() {
 
         <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
           <div className="text-sm font-bold mb-2">📝 Lembretes</div>
-          <div className="flex gap-2 mb-2"><input className={inp} placeholder="Ex: Trocar o tapete" value={lTexto} onChange={(e) => setLTexto(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addLembrete()} /><button onClick={addLembrete} className="px-3 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+</button></div>
+          <div className="flex gap-2 mb-2"><input className={inp} placeholder="Ex: Trocar o tapete" value={lTexto} onChange={(e) => setLTexto(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addLembrete()} /><button onClick={addLembrete} className="px-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+</button></div>
           <div className="space-y-1">
             {casa.lembretes.map((l) => (
               <div key={l.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-zinc-800/50">

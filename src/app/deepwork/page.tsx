@@ -42,7 +42,7 @@ export default function DeepWorkPage() {
 
   const addMeta = () => { if (!mtexto.trim() && !mimg.trim()) return; setDeepwork({ ...deepwork, metas: [...(deepwork.metas || []), { id: uid(), texto: mtexto.trim(), img: mimg.trim() }] }); setMtexto(''); setMimg(''); };
   const delMeta = (id: string) => setDeepwork({ ...deepwork, metas: (deepwork.metas || []).filter((m) => m.id !== id) });
-  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
 
   return (
     <div className="max-w-3xl">
@@ -68,8 +68,8 @@ export default function DeepWorkPage() {
           <div className="space-y-2">
             {AMBIENT_SOUNDS.map((snd) => (
               <div key={snd.id} className="flex items-center gap-2">
-                <button onClick={() => toggleSound(snd)} className={`px-2 py-1.5 rounded-lg text-sm w-32 text-left ${active[snd.id] ? 'bg-violet-600 text-white' : 'bg-zinc-800 text-zinc-300'}`}>{active[snd.id] ? '⏸' : '▶'} {snd.label}</button>
-                <input type="range" min={0} max={1} step={0.05} value={vol[snd.id] ?? 0.4} onChange={(e) => setVolume(snd.id, parseFloat(e.target.value))} className="flex-1 accent-violet-500" />
+                <button onClick={() => toggleSound(snd)} className={`px-2 py-1.5 rounded-lg text-sm w-32 text-left ${active[snd.id] ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-zinc-300'}`}>{active[snd.id] ? '⏸' : '▶'} {snd.label}</button>
+                <input type="range" min={0} max={1} step={0.05} value={vol[snd.id] ?? 0.4} onChange={(e) => setVolume(snd.id, parseFloat(e.target.value))} className="flex-1 accent-indigo-500" />
               </div>
             ))}
           </div>
@@ -82,7 +82,7 @@ export default function DeepWorkPage() {
         <div className="flex gap-2 mb-3">
           <input className={inp} placeholder="Objetivo / frase motivadora" value={mtexto} onChange={(e) => setMtexto(e.target.value)} />
           <input className={inp} placeholder="URL de imagem (opcional)" value={mimg} onChange={(e) => setMimg(e.target.value)} />
-          <button onClick={addMeta} className="px-4 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold shrink-0">+</button>
+          <button onClick={addMeta} className="px-4 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold shrink-0">+</button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {(deepwork.metas || []).map((m) => (

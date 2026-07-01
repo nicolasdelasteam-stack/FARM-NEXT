@@ -27,7 +27,7 @@ export default function CampoPage() {
   const [due, setDue] = useState('');
 
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 3000); };
-  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
   const todayStr = today();
 
   const criar = () => {
@@ -60,12 +60,12 @@ export default function CampoPage() {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-black">🎯 Campo de Batalha</h1>
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg font-semibold text-sm">
+        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-semibold text-sm">
           {showForm ? 'Fechar' : '+ Nova Missão'}
         </button>
       </div>
 
-      {msg && <div className="mb-4 p-2 rounded-lg bg-violet-950/50 border border-violet-800/50 text-sm text-violet-200 text-center">{msg}</div>}
+      {msg && <div className="mb-4 p-2 rounded-lg bg-indigo-950/50 border border-indigo-800/50 text-sm text-indigo-200 text-center">{msg}</div>}
 
       {showForm && (
         <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 mb-4">
@@ -86,7 +86,7 @@ export default function CampoPage() {
             </select>
             <input className={inp} type="date" value={due} onChange={(e) => setDue(e.target.value)} />
           </div>
-          <button onClick={criar} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Criar missão</button>
+          <button onClick={criar} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">Criar missão</button>
         </div>
       )}
 
@@ -102,7 +102,7 @@ export default function CampoPage() {
             key={tab.key}
             onClick={() => setFilter(tab.key)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              filter === tab.key ? 'bg-violet-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+              filter === tab.key ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
             }`}
           >
             {tab.label}
@@ -138,10 +138,10 @@ export default function CampoPage() {
                   onClick={() => (m.done ? reabrir(m.id) : concluir(m.id))}
                   title={m.done ? 'Reabrir' : 'Concluir'}
                   className={`mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
-                    m.done ? 'border-violet-500 bg-violet-600/30' : 'border-zinc-600 hover:border-violet-400'
+                    m.done ? 'border-indigo-500 bg-indigo-600/30' : 'border-zinc-600 hover:border-indigo-400'
                   }`}
                 >
-                  {m.done ? <span className="text-violet-300 text-sm">✓</span> : ''}
+                  {m.done ? <span className="text-indigo-300 text-sm">✓</span> : ''}
                 </button>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -154,13 +154,13 @@ export default function CampoPage() {
                   </div>
                   {m.description && <p className="text-xs text-zinc-500 mt-0.5">{m.description}</p>}
                   <div className="flex gap-2 mt-1.5 text-xs text-zinc-500">
-                    {m.skill && <span className="px-1.5 py-0.5 rounded bg-violet-900/30 text-violet-400">{SKILL_NAMES[m.skill as keyof typeof SKILL_NAMES] || m.skill}</span>}
+                    {m.skill && <span className="px-1.5 py-0.5 rounded bg-indigo-900/30 text-indigo-400">{SKILL_NAMES[m.skill as keyof typeof SKILL_NAMES] || m.skill}</span>}
                     <span className={dificuldadeCor(m.difficulty)}>{m.difficulty}</span>
                   </div>
                 </div>
                 <div className="text-right text-xs shrink-0">
                   <div>
-                    <span className="text-violet-400 font-semibold">+{m.reward.xp}XP</span>
+                    <span className="text-indigo-400 font-semibold">+{m.reward.xp}XP</span>
                     {m.reward.coins > 0 && <span className="text-yellow-400 font-semibold ml-1">+{m.reward.coins}</span>}
                   </div>
                   <button onClick={() => removeMission(m.id)} className="text-zinc-700 hover:text-red-400 mt-1">excluir</button>

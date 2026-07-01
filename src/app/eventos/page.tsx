@@ -22,7 +22,7 @@ export default function EventosPage() {
 
   const t = today();
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 3500); };
-  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
 
   const statusOf = (e: { inicio: string; fim: string; resgatado: boolean }) => {
     if (e.resgatado) return 'concluido';
@@ -77,10 +77,10 @@ export default function EventosPage() {
     <div className="max-w-3xl">
       <div className="flex justify-between items-center mb-4">
         <div><h1 className="text-xl font-black">🎉 Eventos</h1><p className="text-sm text-zinc-500">Desafios por tempo limitado e seu inventário.</p></div>
-        <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Novo evento'}</button>
+        <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Novo evento'}</button>
       </div>
 
-      {msg && <div className="mb-4 p-2 rounded-lg bg-violet-950/50 border border-violet-800/50 text-sm text-violet-200 text-center">{msg}</div>}
+      {msg && <div className="mb-4 p-2 rounded-lg bg-indigo-950/50 border border-indigo-800/50 text-sm text-indigo-200 text-center">{msg}</div>}
 
       {avisos.length > 0 && (
         <div className="mb-4 p-3 rounded-xl bg-amber-950/40 border border-amber-800/50 space-y-1">
@@ -106,7 +106,7 @@ export default function EventosPage() {
               : <div className="text-[11px] text-emerald-400 flex items-center px-1">✓ Item funcional — usar no inventário aplica o efeito.</div>}
             <input className={inp} type="number" placeholder="Moedas extras" value={coins} onChange={(e) => setCoins(e.target.value)} />
           </div>
-          <button onClick={addEvento} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Criar evento</button>
+          <button onClick={addEvento} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">Criar evento</button>
         </div>
       )}
 
@@ -142,7 +142,7 @@ export default function EventosPage() {
             <div className="text-xs font-semibold mt-1 truncate">{i.nome}</div>
             <div className="text-[10px] text-zinc-600">de {i.origem}</div>
             {i.usado ? <span className="text-[10px] text-zinc-500">usado</span>
-              : <button onClick={() => usarItem(i.id)} className="mt-1 text-[11px] text-violet-400 hover:text-violet-300">Usar</button>}
+              : <button onClick={() => usarItem(i.id)} className="mt-1 text-[11px] text-indigo-400 hover:text-indigo-300">Usar</button>}
           </div>
         ))}
       </div>

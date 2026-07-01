@@ -67,7 +67,7 @@ export default function CavernaPage() {
         <h1 className="text-xl font-black">🕯️ Caverna do Foco</h1>
         <span className="text-xs text-zinc-500">⏱️ {focusMin} min de foco no total</span>
       </div>
-      {msg && <div className="mb-4 p-2 rounded-lg bg-violet-950/50 border border-violet-800/50 text-sm text-violet-200 text-center">{msg}</div>}
+      {msg && <div className="mb-4 p-2 rounded-lg bg-indigo-950/50 border border-indigo-800/50 text-sm text-indigo-200 text-center">{msg}</div>}
       <div className="p-6 rounded-xl bg-zinc-900 border border-zinc-800 text-center">
         <div style={{ fontSize: `${treeSize}px` }} className="mb-4 transition-all duration-500">{treeIcons[treeStage]}</div>
         <div className="text-4xl font-black mb-2 font-mono">
@@ -75,12 +75,12 @@ export default function CavernaPage() {
         </div>
         <div className="text-sm text-zinc-500 mb-4">{phase === 'focus' ? '🎯 Foco' : '☕ Descanso'}</div>
         <div className="h-2 rounded-full bg-zinc-800 overflow-hidden mb-6 max-w-xs mx-auto">
-          <div className={`h-full rounded-full transition-all duration-500 ${phase === 'focus' ? 'bg-violet-500' : 'bg-emerald-500'}`}
+          <div className={`h-full rounded-full transition-all duration-500 ${phase === 'focus' ? 'bg-indigo-500' : 'bg-emerald-500'}`}
             style={{ width: `${pct}%` }} />
         </div>
         <div className="flex gap-3 justify-center">
           {!running ? (
-            <button onClick={start} className="px-6 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg font-semibold">▶ Iniciar</button>
+            <button onClick={start} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-semibold">▶ Iniciar</button>
           ) : (
             <button onClick={stop} className="px-6 py-2 bg-red-600 hover:bg-red-500 rounded-lg font-semibold">⏹ Parar</button>
           )}

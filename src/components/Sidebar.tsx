@@ -58,14 +58,14 @@ export default function Sidebar() {
   return (
     <aside className="flex flex-col bg-zinc-950 border-r border-zinc-800 w-64 h-screen sticky top-0">
       <div className="flex items-center gap-2 px-4 h-14 border-b border-zinc-800 shrink-0">
-        <span className="text-xl font-black text-violet-400">Z<b className="text-white">ÊNITE</b></span>
+        <span className="text-xl font-black bg-gradient-to-r from-indigo-400 via-blue-400 to-indigo-300 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]">ZÊNITE</span>
       </div>
       <div className="p-3 border-b border-zinc-800 space-y-2 shrink-0">
         {player.gameOver && <div className="text-center py-1 text-xs font-bold bg-red-600 rounded">💀 DERROTADO</div>}
         <div className="flex items-center gap-2">
           {player.photo
             // eslint-disable-next-line @next/next/no-img-element -- foto/gif de perfil (data-URL)
-            ? <img src={player.photo} alt="" className="w-8 h-8 rounded-full object-cover border border-violet-600" />
+            ? <img src={player.photo} alt="" className="w-8 h-8 rounded-full object-cover border border-indigo-600" />
             : <span className="text-2xl">{player.avatar}</span>}
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold truncate">{player.name}</div>
@@ -83,7 +83,7 @@ export default function Sidebar() {
             <span>XP</span><span>{player.xp}/{player.xpToNext}</span>
           </div>
           <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-            <div className="h-full bg-violet-500 rounded-full transition-all duration-500" style={{ width: `${xpPct}%` }} />
+            <div className="h-full bg-indigo-500 rounded-full transition-all duration-500" style={{ width: `${xpPct}%` }} />
           </div>
         </div>
       </div>
@@ -97,7 +97,7 @@ export default function Sidebar() {
                 <Link key={item.href} href={item.href}
                   className={cn(
                     'flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors',
-                    active ? 'bg-violet-600/20 text-violet-300 font-medium' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                    active ? 'bg-indigo-600/20 text-indigo-300 font-medium' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
                   )}>
                   <span className="text-base">{item.icon}</span>
                   <span>{item.label}</span>

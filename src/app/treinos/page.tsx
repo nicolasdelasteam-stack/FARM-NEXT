@@ -32,8 +32,8 @@ export default function TreinosPage() {
   const delGrupo = (rid: string) => setTreinos({ ...treinos, rotinas: treinos.rotinas.filter((r) => r.id !== rid) });
   const addPeso = () => { const v = parseFloat(novoPeso); if (!v) return; setTreinos({ ...treinos, perfil: { ...p, peso: v }, logs: [...treinos.logs, { id: uid(), data: today(), peso: v }] }); setNovoPeso(''); };
 
-  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
-  const sm = 'bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm outline-none focus:border-violet-500';
+  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
+  const sm = 'bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm outline-none focus:border-indigo-500';
   const logs = [...treinos.logs].sort((a, b) => a.data.localeCompare(b.data));
   const maxP = Math.max(...logs.map((l) => l.peso), 1);
 
@@ -43,7 +43,7 @@ export default function TreinosPage() {
       <p className="text-sm text-zinc-500 mb-4">Macros calculados por fórmula, rotina e guia de grupos musculares.</p>
       <div className="flex gap-2 mb-5">
         {(['macros', 'rotina', 'guia'] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${tab === t ? 'bg-violet-600 text-white' : 'bg-zinc-900 text-zinc-400'}`}>
+          <button key={t} onClick={() => setTab(t)} className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${tab === t ? 'bg-indigo-600 text-white' : 'bg-zinc-900 text-zinc-400'}`}>
             {t === 'macros' ? 'Macros' : t === 'rotina' ? 'Rotina' : 'Guia'}
           </button>
         ))}
@@ -67,9 +67,9 @@ export default function TreinosPage() {
             </div>
           </div>
           <div className="space-y-3">
-            <div className="p-4 rounded-xl bg-gradient-to-br from-violet-950/50 to-zinc-900 border border-violet-800/40 text-center">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-950/50 to-zinc-900 border border-indigo-800/40 text-center">
               <div className="text-xs text-zinc-400">Calorias necessárias</div>
-              <div className="text-4xl font-black text-violet-300">{kcal}</div>
+              <div className="text-4xl font-black text-indigo-300">{kcal}</div>
               <div className="text-xs text-zinc-500">kcal/dia · TMB {Math.round(bmr)}</div>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
@@ -82,10 +82,10 @@ export default function TreinosPage() {
               ))}
             </div>
             <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800">
-              <div className="flex gap-2 mb-2"><input className={sm + ' flex-1'} type="number" step="0.1" placeholder="Registrar peso hoje" value={novoPeso} onChange={(e) => setNovoPeso(e.target.value)} /><button onClick={addPeso} className="px-3 bg-violet-600 hover:bg-violet-500 rounded text-sm font-semibold">Salvar</button></div>
+              <div className="flex gap-2 mb-2"><input className={sm + ' flex-1'} type="number" step="0.1" placeholder="Registrar peso hoje" value={novoPeso} onChange={(e) => setNovoPeso(e.target.value)} /><button onClick={addPeso} className="px-3 bg-indigo-600 hover:bg-indigo-500 rounded text-sm font-semibold">Salvar</button></div>
               {logs.length > 1 && (
                 <div className="flex items-end gap-1 h-16">
-                  {logs.slice(-16).map((l) => <div key={l.id} title={`${l.peso}kg`} className="flex-1 bg-violet-600/60 rounded-t" style={{ height: `${(l.peso / maxP) * 100}%` }} />)}
+                  {logs.slice(-16).map((l) => <div key={l.id} title={`${l.peso}kg`} className="flex-1 bg-indigo-600/60 rounded-t" style={{ height: `${(l.peso / maxP) * 100}%` }} />)}
                 </div>
               )}
             </div>
@@ -97,7 +97,7 @@ export default function TreinosPage() {
         <div>
           <div className="flex gap-2 mb-4">
             <select className={inp + ' max-w-xs'} value={novoGrupo} onChange={(e) => setNovoGrupo(e.target.value)}>{MUSCLE_GUIDE.map((m) => <option key={m.grupo}>{m.grupo}</option>)}</select>
-            <button onClick={addGrupo} className="px-4 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+ Dia de treino</button>
+            <button onClick={addGrupo} className="px-4 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+ Dia de treino</button>
           </div>
           {treinos.rotinas.length === 0 && <p className="text-sm text-zinc-600">Nenhuma rotina ainda.</p>}
           <div className="space-y-3">
@@ -105,14 +105,14 @@ export default function TreinosPage() {
               <div key={r.id} className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
                 <div className="flex justify-between items-center mb-2">
                   <div className="font-bold">{r.grupo}</div>
-                  <div className="flex gap-2"><button onClick={() => addExercicio(r.id)} className="text-xs text-violet-400 hover:text-violet-300">+ personalizado</button><button onClick={() => delGrupo(r.id)} className="text-xs text-zinc-600 hover:text-red-400">excluir</button></div>
+                  <div className="flex gap-2"><button onClick={() => addExercicio(r.id)} className="text-xs text-indigo-400 hover:text-indigo-300">+ personalizado</button><button onClick={() => delGrupo(r.id)} className="text-xs text-zinc-600 hover:text-red-400">excluir</button></div>
                 </div>
                 {(() => {
                   const guia = MUSCLE_GUIDE.find((m) => m.grupo === r.grupo)?.exercicios || [];
                   return guia.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5 mb-2 pb-2 border-b border-zinc-800">
                       {guia.map((ex) => (
-                        <button key={ex} onClick={() => addExercicio(r.id, ex)} className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-violet-600 text-xs text-zinc-300" title="Adicionar à rotina">+ {ex}</button>
+                        <button key={ex} onClick={() => addExercicio(r.id, ex)} className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-indigo-600 text-xs text-zinc-300" title="Adicionar à rotina">+ {ex}</button>
                       ))}
                     </div>
                   ) : null;

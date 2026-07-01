@@ -16,7 +16,7 @@ export default function SegundoCerebroPage() {
   const setCerebro = useStore((s) => s.setCerebro);
   const [tab, setTab] = useState<'livros' | 'habilidades' | 'ideias'>('livros');
 
-  const inp = 'bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
 
   // ─── Livros ───
   const [lTitulo, setLTitulo] = useState('');
@@ -67,7 +67,7 @@ export default function SegundoCerebroPage() {
       <div className="flex gap-2 mb-4">
         {(['livros', 'habilidades', 'ideias'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${tab === t ? 'bg-violet-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>
+            className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${tab === t ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>
             {t === 'livros' ? '📚 Livros' : t === 'habilidades' ? '🎯 Habilidades' : '💡 Ideias'}
           </button>
         ))}
@@ -85,7 +85,7 @@ export default function SegundoCerebroPage() {
               <select className={inp} value={lStatus} onChange={(e) => setLStatus(e.target.value as LivroStatus)}>
                 {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
               </select>
-              <button onClick={addLivro} className="px-4 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+</button>
+              <button onClick={addLivro} className="px-4 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+</button>
             </div>
           </div>
           <div className="space-y-2">
@@ -95,7 +95,7 @@ export default function SegundoCerebroPage() {
                 <div className="flex items-start gap-2">
                   <span className="text-lg">📖</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold truncate">{l.link ? <a href={l.link} target="_blank" rel="noreferrer" className="hover:text-violet-400 underline-offset-2 hover:underline">{l.titulo}</a> : l.titulo}</div>
+                    <div className="text-sm font-semibold truncate">{l.link ? <a href={l.link} target="_blank" rel="noreferrer" className="hover:text-indigo-400 underline-offset-2 hover:underline">{l.titulo}</a> : l.titulo}</div>
                     {l.autor && <div className="text-[11px] text-zinc-500">{l.autor}</div>}
                   </div>
                   <select className={`${inp} text-xs`} value={l.status} onChange={(e) => setLivro(l.id, { status: e.target.value as LivroStatus })}>
@@ -104,7 +104,7 @@ export default function SegundoCerebroPage() {
                   <button onClick={() => delLivro(l.id)} className="text-zinc-600 hover:text-red-400 text-xs shrink-0">✕</button>
                 </div>
                 <div className="flex items-center gap-2 mt-2">
-                  <input type="range" min={0} max={100} value={l.progresso} onChange={(e) => setLivro(l.id, { progresso: parseInt(e.target.value) })} className="flex-1 accent-violet-500" />
+                  <input type="range" min={0} max={100} value={l.progresso} onChange={(e) => setLivro(l.id, { progresso: parseInt(e.target.value) })} className="flex-1 accent-indigo-500" />
                   <span className={`text-xs w-10 text-right ${STATUS[l.status].color}`}>{l.progresso}%</span>
                 </div>
               </div>
@@ -117,11 +117,11 @@ export default function SegundoCerebroPage() {
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2">
             <div className="flex gap-1.5 flex-wrap">
-              {HICONS.map((e) => <button key={e} onClick={() => setHIcon(e)} className={`w-9 h-9 rounded-lg text-lg ${hIcon === e ? 'bg-violet-600' : 'bg-zinc-800'}`}>{e}</button>)}
+              {HICONS.map((e) => <button key={e} onClick={() => setHIcon(e)} className={`w-9 h-9 rounded-lg text-lg ${hIcon === e ? 'bg-indigo-600' : 'bg-zinc-800'}`}>{e}</button>)}
             </div>
             <div className="flex gap-2">
               <input className={`${inp} flex-1`} placeholder="Ex: Programação, Violão..." value={hNome} onChange={(e) => setHNome(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addHab()} />
-              <button onClick={addHab} className="px-4 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">+</button>
+              <button onClick={addHab} className="px-4 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">+</button>
             </div>
           </div>
           <div className="space-y-3">
@@ -133,7 +133,7 @@ export default function SegundoCerebroPage() {
                   <span className="text-sm font-semibold flex-1">{h.nome}</span>
                   <button onClick={() => delHab(h.id)} className="text-zinc-600 hover:text-red-400 text-xs">✕</button>
                 </div>
-                <textarea className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500 h-24" placeholder="Anotações, links, o que você aprendeu para revisar depois..." value={h.notas} onChange={(e) => setHabNotas(h.id, e.target.value)} />
+                <textarea className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 h-24" placeholder="Anotações, links, o que você aprendeu para revisar depois..." value={h.notas} onChange={(e) => setHabNotas(h.id, e.target.value)} />
               </div>
             ))}
           </div>
@@ -143,12 +143,12 @@ export default function SegundoCerebroPage() {
       {tab === 'ideias' && (
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2">
-            <textarea className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500 h-16" placeholder="Sua ideia..." value={iTexto} onChange={(e) => setITexto(e.target.value)} />
+            <textarea className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 h-16" placeholder="Sua ideia..." value={iTexto} onChange={(e) => setITexto(e.target.value)} />
             <div className="flex gap-2">
               <select className={`${inp} flex-1`} value={iCat} onChange={(e) => setICat(e.target.value)}>
                 {CATS.map((c) => <option key={c}>{c}</option>)}
               </select>
-              <button onClick={addIdeia} className="px-4 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Salvar</button>
+              <button onClick={addIdeia} className="px-4 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">Salvar</button>
             </div>
           </div>
           <div className="grid sm:grid-cols-2 gap-2">
@@ -156,7 +156,7 @@ export default function SegundoCerebroPage() {
             {[...cerebro.ideias].reverse().map((i) => (
               <div key={i.id} className="p-3 rounded-xl bg-zinc-900 border border-zinc-800">
                 <div className="flex justify-between items-start gap-2 mb-1">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-violet-400">{i.categoria}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-indigo-400">{i.categoria}</span>
                   <button onClick={() => delIdeia(i.id)} className="text-zinc-600 hover:text-red-400 text-xs">✕</button>
                 </div>
                 <p className="text-sm text-zinc-300 whitespace-pre-wrap">{i.texto}</p>

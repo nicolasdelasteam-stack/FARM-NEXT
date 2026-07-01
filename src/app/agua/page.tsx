@@ -29,7 +29,7 @@ export default function AguaPage() {
           </div>
           <div className="flex gap-2 justify-center">
             {[1, 2, 3].map((n) => (
-              <button key={n} onClick={() => addWater(n)} className="px-4 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg font-semibold text-sm">
+              <button key={n} onClick={() => addWater(n)} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-semibold text-sm">
                 +{n} Copo{n > 1 ? 's' : ''}
               </button>
             ))}

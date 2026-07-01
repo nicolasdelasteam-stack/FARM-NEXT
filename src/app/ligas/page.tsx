@@ -51,7 +51,7 @@ export default function LigasPage() {
 
       <div className="space-y-1">
         {all.map((pl, i) => (
-          <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border text-sm ${pl.isMe ? 'bg-zinc-900 border-violet-800/50' : 'bg-zinc-900/50 border-zinc-800/30'}`}>
+          <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border text-sm ${pl.isMe ? 'bg-zinc-900 border-indigo-800/50' : 'bg-zinc-900/50 border-zinc-800/30'}`}>
             <span className="font-black text-xs w-6">{i + 1}º</span>
             <span className="text-lg">{pl.avatar}</span>
             <span className="flex-1 font-medium">{pl.name}{pl.isMe ? ' (você)' : ''}</span>

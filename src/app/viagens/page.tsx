@@ -8,7 +8,7 @@ import type { ViagemStatus } from '@/lib/types';
 
 const STATUS_COR: Record<string, string> = {
   quero_ir: 'bg-zinc-700 text-zinc-200', planejando: 'bg-sky-900/50 text-sky-300',
-  viajando: 'bg-emerald-900/50 text-emerald-300', ja_fui: 'bg-violet-900/50 text-violet-300',
+  viajando: 'bg-emerald-900/50 text-emerald-300', ja_fui: 'bg-indigo-900/50 text-indigo-300',
   quero_voltar: 'bg-yellow-900/50 text-yellow-300',
 };
 
@@ -28,7 +28,7 @@ export default function ViagensPage() {
   const [status, setStatus] = useState<ViagemStatus>('quero_ir');
   const [itemInputs, setItemInputs] = useState<Record<string, { texto: string; grupo: string }>>({});
 
-  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+  const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
 
   const addViagem = () => {
     if (!local.trim()) return;
@@ -56,7 +56,7 @@ export default function ViagensPage() {
     <div className="max-w-3xl">
       <div className="flex justify-between items-center mb-1">
         <div><h1 className="text-xl font-black">✈️ Viagens</h1><p className="text-sm text-zinc-500">Destinos, custos e o que levar na mala.</p></div>
-        <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Viagem'}</button>
+        <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Viagem'}</button>
       </div>
 
       {viagens.length > 0 && (
@@ -77,7 +77,7 @@ export default function ViagensPage() {
             <input className={inp} type="number" placeholder="Custo (R$)" value={custo} onChange={(e) => setCusto(e.target.value)} />
             <select className={inp} value={status} onChange={(e) => setStatus(e.target.value as ViagemStatus)}>{Object.entries(VIAGEM_STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
           </div>
-          <button onClick={addViagem} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Criar viagem</button>
+          <button onClick={addViagem} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">Criar viagem</button>
         </div>
       )}
 
@@ -131,13 +131,13 @@ export default function ViagensPage() {
                 <div className="flex gap-2 mt-2">
                   <input className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm" placeholder="Item" value={ii.texto} onChange={(e) => setItemInputs({ ...itemInputs, [v.id]: { ...ii, texto: e.target.value } })} onKeyDown={(e) => e.key === 'Enter' && addItem(v.id)} />
                   <select className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm" value={ii.grupo} onChange={(e) => setItemInputs({ ...itemInputs, [v.id]: { ...ii, grupo: e.target.value } })}>{PACKING_TEMPLATE.map((g) => <option key={g}>{g}</option>)}</select>
-                  <button onClick={() => addItem(v.id)} className="px-3 bg-violet-600 hover:bg-violet-500 rounded text-sm font-semibold">+</button>
+                  <button onClick={() => addItem(v.id)} className="px-3 bg-indigo-600 hover:bg-indigo-500 rounded text-sm font-semibold">+</button>
                 </div>
                 {sugestoes.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     <span className="text-[11px] text-zinc-600 self-center">Sugestões ({ii.grupo}):</span>
                     {sugestoes.map((s) => (
-                      <button key={s} onClick={() => addItemNamed(v.id, s, ii.grupo)} className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-violet-600 text-xs text-zinc-300">+ {s}</button>
+                      <button key={s} onClick={() => addItemNamed(v.id, s, ii.grupo)} className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-indigo-600 text-xs text-zinc-300">+ {s}</button>
                     ))}
                   </div>
                 )}
