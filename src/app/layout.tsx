@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Sidebar from '@/components/Sidebar';
+import Notifier from '@/components/Notifier';
 
 export const metadata: Metadata = {
   title: 'ZÊNITE — Produtividade Gamificada',
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="view" className="flex-1 overflow-y-auto p-6">
           {children}
         </main>
+        <Notifier />
       </body>
     </html>
   );

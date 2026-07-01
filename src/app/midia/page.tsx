@@ -1,17 +1,156 @@
 'use client';
 
 import { useState } from 'react';
+import { useStore } from '@/lib/store';
+import { uid } from '@/lib/engine';
+import type { MidiaItem, MidiaGrupo, MidiaStatus } from '@/lib/types';
+
+const GRUPO: Record<MidiaGrupo, { label: string; icon: string }> = {
+  filme: { label: 'Filme', icon: '🎬' },
+  serie: { label: 'Série', icon: '📺' },
+  anime: { label: 'Anime', icon: '🍥' },
+};
+const STATUS: Record<MidiaStatus, { label: string; color: string }> = {
+  quero_assistir: { label: 'Quero assistir', color: 'text-zinc-400' },
+  assistindo: { label: 'Assistindo', color: 'text-sky-400' },
+  assistido: { label: 'Assistido', color: 'text-emerald-400' },
+};
+const CAPAS = ['🎬', '📺', '🍥', '🦸', '👽', '🧙', '🚀', '🔫', '💀', '👻', '🐉', '❤️', '😂', '🕵️', '🏆', '🌌'];
+
+type Filtro = 'todos' | MidiaGrupo | 'favoritos' | 'assistindo' | 'assistido';
 
 export default function MidiaPage() {
-  const [items, setItems] = useState<{ id: string; title: string; type: string; score: number; status: string }[]>([]);
+  const midia = useStore((s) => s.midia);
+  const setMidia = useStore((s) => s.setMidia);
+  const [filtro, setFiltro] = useState<Filtro>('todos');
+  const [open, setOpen] = useState(false);
+
+  const [titulo, setTitulo] = useState('');
+  const [capa, setCapa] = useState('🎬');
+  const [grupo, setGrupo] = useState<MidiaGrupo>('filme');
+  const [status, setStatus] = useState<MidiaStatus>('quero_assistir');
+  const [temporadas, setTemporadas] = useState('1');
+
+  const inp = 'bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
+
+  const add = () => {
+    if (!titulo.trim()) return;
+    const item: MidiaItem = {
+      id: uid(), titulo: titulo.trim(), capa, grupo, status,
+      estrelas: 0, favorito: false,
+      temporadas: grupo === 'filme' ? 0 : Math.max(1, parseInt(temporadas) || 1), vistas: 0,
+    };
+    setMidia([...midia, item]);
+    setTitulo(''); setTemporadas('1'); setOpen(false);
+  };
+  const patch = (id: string, p: Partial<MidiaItem>) =>
+    setMidia(midia.map((m) => m.id === id ? { ...m, ...p } : m));
+  const del = (id: string) => setMidia(midia.filter((m) => m.id !== id));
+
+  const FILTROS: { key: Filtro; label: string }[] = [
+    { key: 'todos', label: 'Todos' },
+    { key: 'filme', label: '🎬 Filmes' },
+    { key: 'serie', label: '📺 Séries' },
+    { key: 'anime', label: '🍥 Animes' },
+    { key: 'favoritos', label: '⭐ Favoritos' },
+    { key: 'assistindo', label: 'Assistindo' },
+    { key: 'assistido', label: 'Assistidos' },
+  ];
+
+  const visiveis = midia.filter((m) => {
+    if (filtro === 'todos') return true;
+    if (filtro === 'favoritos') return m.favorito;
+    if (filtro === 'assistindo' || filtro === 'assistido') return m.status === filtro;
+    return m.grupo === filtro;
+  });
 
   return (
-    <div className="max-w-xl space-y-4">
-      <h1 className="text-xl font-black">🎬 Mídia</h1>
-      <p className="text-sm text-zinc-500">Em breve: filmes, séries e livros com avaliação.</p>
-      <div className="p-8 text-center text-zinc-600">
-        <div className="text-4xl mb-2">🎥</div>
-        <p>Catálogo completo com filtros e notas.</p>
+    <div className="max-w-3xl">
+      <div className="flex justify-between items-center mb-1">
+        <h1 className="text-xl font-black">🎬 Mídia</h1>
+        <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Adicionar'}</button>
+      </div>
+      <p className="text-sm text-zinc-500 mb-4">Filmes, séries e animes — avaliação, status e progresso de temporadas.</p>
+
+      {open && (
+        <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 mb-5">
+          <div className="flex gap-1.5 flex-wrap">
+            {CAPAS.map((c) => <button key={c} onClick={() => setCapa(c)} className={`w-9 h-9 rounded-lg text-lg ${capa === c ? 'bg-violet-600' : 'bg-zinc-800'}`}>{c}</button>)}
+          </div>
+          <input className={`${inp} w-full`} placeholder="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+          <div className="flex gap-2">
+            <select className={`${inp} flex-1`} value={grupo} onChange={(e) => setGrupo(e.target.value as MidiaGrupo)}>
+              {Object.entries(GRUPO).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            </select>
+            <select className={`${inp} flex-1`} value={status} onChange={(e) => setStatus(e.target.value as MidiaStatus)}>
+              {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            </select>
+            {grupo !== 'filme' && <input className={`${inp} w-28`} type="number" min={1} placeholder="Temporadas" value={temporadas} onChange={(e) => setTemporadas(e.target.value)} />}
+          </div>
+          <button onClick={add} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Adicionar</button>
+        </div>
+      )}
+
+      <div className="flex gap-1.5 flex-wrap mb-4">
+        {FILTROS.map((f) => (
+          <button key={f.key} onClick={() => setFiltro(f.key)}
+            className={`px-2.5 py-1 rounded-lg text-xs font-medium ${filtro === f.key ? 'bg-violet-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>{f.label}</button>
+        ))}
+      </div>
+
+      {visiveis.length === 0 && <p className="text-center text-zinc-500 py-10 text-sm">Nada por aqui ainda. Adicione um título!</p>}
+
+      <div className="grid sm:grid-cols-2 gap-3">
+        {visiveis.map((m) => {
+          const pct = m.temporadas > 0 ? Math.round((m.vistas / m.temporadas) * 100) : 0;
+          return (
+            <div key={m.id} className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+              <div className="flex items-start gap-3">
+                <span className="text-3xl">{m.capa}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="font-bold text-sm truncate">{m.titulo}</div>
+                    <button onClick={() => del(m.id)} className="text-zinc-700 hover:text-red-400 text-xs shrink-0">✕</button>
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wide text-violet-400">{GRUPO[m.grupo].icon} {GRUPO[m.grupo].label}</div>
+                  <div className="flex items-center gap-0.5 mt-1">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <button key={s} onClick={() => patch(m.id, { estrelas: m.estrelas === s ? 0 : s })} className="text-sm leading-none">
+                        <span className={s <= m.estrelas ? 'text-yellow-400' : 'text-zinc-700'}>★</span>
+                      </button>
+                    ))}
+                    <button onClick={() => patch(m.id, { favorito: !m.favorito })} className="ml-1 text-sm" title="Favorito">
+                      <span className={m.favorito ? 'text-pink-400' : 'text-zinc-700'}>❤</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 mt-3">
+                <select className={`${inp} text-xs flex-1`} value={m.status} onChange={(e) => patch(m.id, { status: e.target.value as MidiaStatus })}>
+                  {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                </select>
+              </div>
+
+              {m.grupo !== 'filme' && (
+                <div className="mt-3">
+                  <div className="flex justify-between text-[11px] text-zinc-500 mb-1">
+                    <span>Temporadas: {m.vistas}/{m.temporadas}</span>
+                    <span className={STATUS[m.status].color}>{pct}%</span>
+                  </div>
+                  <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-1">
+                    <div className="h-full bg-violet-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="flex gap-1">
+                    <button onClick={() => patch(m.id, { vistas: Math.max(0, m.vistas - 1) })} className="px-2 py-0.5 text-xs bg-zinc-800 hover:bg-zinc-700 rounded">−</button>
+                    <button onClick={() => patch(m.id, { vistas: Math.min(m.temporadas, m.vistas + 1) })} className="px-2 py-0.5 text-xs bg-zinc-800 hover:bg-emerald-600 rounded">+ temporada</button>
+                    <input type="number" min={1} value={m.temporadas} onChange={(e) => patch(m.id, { temporadas: Math.max(1, parseInt(e.target.value) || 1) })} className={`${inp} w-16 text-xs ml-auto`} title="Total de temporadas" />
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

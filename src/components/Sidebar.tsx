@@ -16,17 +16,32 @@ const NAV_ITEMS = [
     { href: '/ligas', icon: '📊', label: 'Ligas' },
     { href: '/estatisticas', icon: '📈', label: 'Estatísticas' },
     { href: '/conquistas', icon: '🏆', label: 'Conquistas' },
+    { href: '/hall', icon: '🏛️', label: 'Hall' },
+    { href: '/eventos', icon: '🎉', label: 'Eventos' },
+    { href: '/boss', icon: '⚔️', label: 'Boss Fight' },
   ]},
   { label: 'Vida', items: [
     { href: '/agua', icon: '💧', label: 'Água' },
     { href: '/financas', icon: '💰', label: 'Finanças' },
     { href: '/academia', icon: '💪', label: 'Academia' },
     { href: '/caverna', icon: '🕯️', label: 'Caverna' },
+    { href: '/dieta', icon: '🥗', label: 'Dieta' },
+    { href: '/compras', icon: '🧺', label: 'Compras' },
+    { href: '/treinos', icon: '🏋️', label: 'Treinos' },
+    { href: '/viagens', icon: '✈️', label: 'Viagens' },
+    { href: '/casa', icon: '🏠', label: 'Casa' },
   ]},
   { label: 'Mente', items: [
     { href: '/estudos', icon: '📚', label: 'Estudos' },
+    { href: '/segundo-cerebro', icon: '🧠', label: 'Segundo Cérebro' },
     { href: '/notas', icon: '📝', label: 'Notas' },
     { href: '/midia', icon: '🎬', label: 'Mídia' },
+    { href: '/deepwork', icon: '🌑', label: 'Deep Work' },
+    { href: '/planejamento', icon: '🗓️', label: 'Planejamento' },
+    { href: '/provas', icon: '📆', label: 'Provas' },
+  ]},
+  { label: 'Social', items: [
+    { href: '/companheiros', icon: '🐾', label: 'Companheiros' },
   ]},
   { label: 'Sistema', items: [
     { href: '/configuracoes', icon: '⚙️', label: 'Configurações' },
@@ -38,7 +53,6 @@ export default function Sidebar() {
   const player = useStore((s) => s.player);
 
   const xpPct = Math.min(100, Math.round((player.xp / player.xpToNext) * 100));
-  const hpPct = Math.round(player.hp / player.maxHp * 100);
   const petStage = player.pet?.stage || 0;
 
   return (

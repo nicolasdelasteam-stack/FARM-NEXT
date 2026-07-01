@@ -1,5 +1,5 @@
-import type { Player, Difficulty, Mission, Reward } from './types';
-import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, PET_STAGES, PET_STREAK_REQ } from './constants';
+import type { Player, Difficulty, Mission, Reward, Boss } from './types';
+import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, PET_STREAK_REQ } from './constants';
 
 // ─── Date helpers ───
 export function today(): string {
@@ -23,6 +23,46 @@ export function getWeekStart(): string {
   const diff = d.getDate() - day + (day === 0 ? -6 : 1);
   d.setDate(diff);
   return d.toISOString().slice(0, 10);
+}
+
+// Segunda-feira (chave da semana) a partir de um 'YYYY-MM-DD' local — tz-safe.
+export function weekKey(dateStr: string): string {
+  const [y, m, dd] = dateStr.split('-').map(Number);
+  const d = new Date(y, m - 1, dd);
+  const day = d.getDay();
+  d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Boss recorrente (semanal/mensal) volta a aparecer quando muda o período em que foi derrotado.
+export function bossShouldReset(boss: Boss): boolean {
+  if (!boss.derrotado || !boss.data || boss.periodo === 'unico') return false;
+  if (boss.periodo === 'semanal') return weekKey(boss.data) !== weekKey(today());
+  if (boss.periodo === 'mensal') return boss.data.slice(0, 7) !== today().slice(0, 7);
+  return false;
+}
+
+export function refreshBosses(bosses: Boss[]): { bosses: Boss[]; changed: boolean } {
+  let changed = false;
+  const next = bosses.map((b) => {
+    if (bossShouldReset(b)) { changed = true; return { ...b, derrotado: false, data: null }; }
+    return b;
+  });
+  return { bosses: next, changed };
+}
+
+// Chamadas impuras isoladas na lib (fora de componentes) — evitam o erro react-hooks/purity.
+export function nowMs(): number {
+  return Date.now();
+}
+export function rand(): number {
+  return Math.random();
+}
+export function daysUntil(dateStr: string): number {
+  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000);
+}
+export function daysSince(dateStr: string): number {
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
 }
 
 // ─── UID ───
@@ -81,7 +121,7 @@ export function spendCoins(player: Player, amount: number): Player | null {
 }
 
 export function damageHp(player: Player, amount: number, settings: { gentleMode?: boolean; hardcoreHp?: boolean }): Player {
-  let p = { ...player };
+  const p = { ...player };
   if (settings.gentleMode) {
     p.hp = Math.max(1, p.hp - Math.floor(amount / 2));
     return p;
@@ -121,7 +161,7 @@ export function updateStreak(player: Player, last: string, todayStr: string): Pl
   return p;
 }
 
-export function checkStreakContinuity(player: Player, last: string | null, todayStr: string): Player {
+export function checkStreakContinuity(player: Player, last: string | null): Player {
   if (!last) return player;
   const p = { ...player };
   const yesterday = dateSub(1);
@@ -146,6 +186,33 @@ export function applyFailDamage(missions: Mission[], settings: { hardcoreFail?: 
     }
   }
   return hpLost;
+}
+
+// Reset diário: zera XP do dia, aplica continuidade da ofensiva, dano por missões
+// falhadas (hardcore) e reabre missões diárias/hábitos. Roda 1x quando o dia vira.
+export function applyDailyReset(
+  player: Player,
+  missions: Mission[],
+  lastReset: string | null,
+  settings: { hardcoreFail?: boolean; hardcoreHp?: boolean; gentleMode?: boolean },
+): { player: Player; missions: Mission[]; changed: boolean } {
+  const t = today();
+  if (lastReset === t) return { player, missions, changed: false };
+
+  let p = { ...player };
+  const hpLost = applyFailDamage(missions, settings);
+  if (hpLost > 0) p = damageHp(p, hpLost, settings);
+  p = checkStreakContinuity(p, lastReset);
+  p.dailyXp = 0;
+  p.metaBatidaHoje = false;
+
+  const nextMissions = missions.map((m) =>
+    m.type === 'daily' || m.type === 'habit'
+      ? { ...m, done: false, completedAt: null, date: t }
+      : m,
+  );
+
+  return { player: p, missions: nextMissions, changed: true };
 }
 
 // ─── Loot box ───
@@ -310,4 +377,37 @@ export function completeMission(mission: Mission): Mission {
     done: true,
     completedAt: new Date().toISOString(),
   };
+}
+
+// Fluxo completo ao concluir uma missão: funde XP, moedas, atributo, contadores,
+// ofensiva/pet e o boss automático num só lugar (antes tudo isso ficava desligado).
+export function applyMissionComplete(
+  player: Player,
+  mission: Mission,
+  settings: { maxDailyXp: number; dailyXpGoal: number },
+): { player: Player; leveledUp: boolean; bossDefeated: boolean } {
+  const beforeLevel = player.level;
+  const skill = typeof mission.skill === 'string' ? mission.skill : undefined;
+
+  let p = addXP(player, mission.reward.xp, settings, skill);
+  p = addCoins(p, mission.reward.coins);
+  if (skill) p = incrementAtributo(p, skill);
+  p.totalMissionsDone = (p.totalMissionsDone || 0) + 1;
+  if (mission.type === 'habit') p.totalHabitsDone = (p.totalHabitsDone || 0) + 1;
+
+  // Ofensiva: ao bater a meta diária de XP, conta como dia ativo e evolui o pet.
+  if (!p.metaBatidaHoje && (p.dailyXp || 0) >= (settings.dailyXpGoal || 100)) {
+    p.metaBatidaHoje = true;
+    p.streak = (p.streak || 0) + 1;
+    if (p.streak > (p.bestStreak || 0)) p.bestStreak = p.streak;
+    p = updatePet(p).player;
+  }
+
+  // Boss automático: invoca um se não houver e causa dano igual ao XP ganho.
+  if (!p.bossActive) p = spawnBoss(p);
+  const dmg = bossDamage(p, mission.reward.xp);
+  p = dmg.player;
+  if (dmg.defeated) p = addCoins(p, 50); // bônus por derrotar o chefe
+
+  return { player: p, leveledUp: p.level > beforeLevel, bossDefeated: dmg.defeated };
 }

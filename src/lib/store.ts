@@ -1,7 +1,30 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Player, Mission, Settings } from './types';
-import { DEFAULT_PLAYER, DEFAULT_SETTINGS, INITIAL_MARKET } from './constants';
+import type {
+  Player, Mission, Settings, DietaState, ComprasState, EventosState, Trofeu, Companion,
+  TreinosState, DeepWorkState, Viagem, PlanejamentoState, CasaState, EstudosState,
+  FinancasState, BossState, CerebroState, Nota, MidiaItem,
+} from './types';
+import { DEFAULT_PLAYER, DEFAULT_SETTINGS, INITIAL_MARKET, DEFAULT_HALL, DEFAULT_BOSSES } from './constants';
+
+const YEAR = new Date().getFullYear();
+
+const D = {
+  dieta: (): DietaState => ({ refeicoes: [], pesos: [], receitas: [] }),
+  compras: (): ComprasState => ({ mercado: [], desejos: [] }),
+  eventos: (): EventosState => ({ eventos: [], inventario: [] }),
+  treinos: (): TreinosState => ({ perfil: { peso: 70, altura: 175, idade: 25, sexo: 'm', atividade: 1.55, objetivo: 'manutencao', proteinaKg: 2, gorduraKg: 1 }, rotinas: [], logs: [] }),
+  deepwork: (): DeepWorkState => ({ checklist: [false, false, false, false, false, false], metas: [] }),
+  viagens: (): Viagem[] => [],
+  planejamento: (): PlanejamentoState => ({ ano: YEAR, metas: [], prioridades: [], disciplina: {} }),
+  casa: (): CasaState => ({ areas: [], tarefas: [], lembretes: [] }),
+  estudos: (): EstudosState => ({ materias: [], biblioteca: [] }),
+  financas: (): FinancasState => ({ transacoes: [], metas: [] }),
+  boss: (): BossState => ({ bosses: DEFAULT_BOSSES.map((b) => ({ ...b })) }),
+  cerebro: (): CerebroState => ({ livros: [], habilidades: [], ideias: [] }),
+  notas: (): Nota[] => [],
+  midia: (): MidiaItem[] => [],
+};
 
 export interface AppState {
   // Data
@@ -11,7 +34,26 @@ export interface AppState {
   market: typeof INITIAL_MARKET;
   agua: { copos: number; meta: number; historico: Record<string, { copos: number; completou: boolean }> };
   lastDailyReset: string | null;
-  ligaData: any | null;
+  ligaData: unknown;
+
+  // FARM-NEXT slices
+  dieta: DietaState;
+  compras: ComprasState;
+  eventos: EventosState;
+  hall: Trofeu[];
+  companions: Companion[];
+  treinos: TreinosState;
+  deepwork: DeepWorkState;
+  viagens: Viagem[];
+  planejamento: PlanejamentoState;
+  casa: CasaState;
+  estudos: EstudosState;
+  financas: FinancasState;
+  boss: BossState;
+  cerebro: CerebroState;
+  notas: Nota[];
+  midia: MidiaItem[];
+  achievements: string[];
 
   // UI
   route: string;
@@ -25,10 +67,28 @@ export interface AppState {
   setView: (view: string) => void;
   setAgua: (agua: AppState['agua']) => void;
   setLastDailyReset: (date: string | null) => void;
-  setLigaData: (data: any) => void;
+  setLigaData: (data: unknown) => void;
   addMission: (mission: Mission) => void;
   updateMission: (id: string, updates: Partial<Mission>) => void;
   removeMission: (id: string) => void;
+  setMarket: (market: AppState['market']) => void;
+  setDieta: (dieta: DietaState) => void;
+  setCompras: (compras: ComprasState) => void;
+  setEventos: (eventos: EventosState) => void;
+  setHall: (hall: Trofeu[]) => void;
+  setCompanions: (companions: Companion[]) => void;
+  setTreinos: (treinos: TreinosState) => void;
+  setDeepwork: (deepwork: DeepWorkState) => void;
+  setViagens: (viagens: Viagem[]) => void;
+  setPlanejamento: (planejamento: PlanejamentoState) => void;
+  setCasa: (casa: CasaState) => void;
+  setEstudos: (estudos: EstudosState) => void;
+  setFinancas: (financas: FinancasState) => void;
+  setBoss: (boss: BossState) => void;
+  setCerebro: (cerebro: CerebroState) => void;
+  setNotas: (notas: Nota[]) => void;
+  setMidia: (midia: MidiaItem[]) => void;
+  setAchievements: (achievements: string[]) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -41,6 +101,25 @@ export const useStore = create<AppState>()(
       agua: { copos: 0, meta: 8, historico: {} },
       lastDailyReset: null,
       ligaData: null,
+
+      dieta: D.dieta(),
+      compras: D.compras(),
+      eventos: D.eventos(),
+      hall: [...DEFAULT_HALL],
+      companions: [],
+      treinos: D.treinos(),
+      deepwork: D.deepwork(),
+      viagens: D.viagens(),
+      planejamento: D.planejamento(),
+      casa: D.casa(),
+      estudos: D.estudos(),
+      financas: D.financas(),
+      boss: D.boss(),
+      cerebro: D.cerebro(),
+      notas: D.notas(),
+      midia: D.midia(),
+      achievements: [],
+
       route: 'dashboard',
       view: 'dashboard',
 
@@ -53,16 +132,54 @@ export const useStore = create<AppState>()(
       setLastDailyReset: (lastDailyReset) => set({ lastDailyReset }),
       setLigaData: (ligaData) => set({ ligaData }),
       addMission: (mission) => set((s) => ({ missions: [...s.missions, mission] })),
-      updateMission: (id, updates) =>
-        set((s) => ({
-          missions: s.missions.map((m) => (m.id === id ? { ...m, ...updates } : m)),
-        })),
-      removeMission: (id) =>
-        set((s) => ({ missions: s.missions.filter((m) => m.id !== id) })),
+      updateMission: (id, updates) => set((s) => ({ missions: s.missions.map((m) => (m.id === id ? { ...m, ...updates } : m)) })),
+      removeMission: (id) => set((s) => ({ missions: s.missions.filter((m) => m.id !== id) })),
+      setMarket: (market) => set({ market }),
+      setDieta: (dieta) => set({ dieta }),
+      setCompras: (compras) => set({ compras }),
+      setEventos: (eventos) => set({ eventos }),
+      setHall: (hall) => set({ hall }),
+      setCompanions: (companions) => set({ companions }),
+      setTreinos: (treinos) => set({ treinos }),
+      setDeepwork: (deepwork) => set({ deepwork }),
+      setViagens: (viagens) => set({ viagens }),
+      setPlanejamento: (planejamento) => set({ planejamento }),
+      setCasa: (casa) => set({ casa }),
+      setEstudos: (estudos) => set({ estudos }),
+      setFinancas: (financas) => set({ financas }),
+      setBoss: (boss) => set({ boss }),
+      setCerebro: (cerebro) => set({ cerebro }),
+      setNotas: (notas) => set({ notas }),
+      setMidia: (midia) => set({ midia }),
+      setAchievements: (achievements) => set({ achievements }),
     }),
     {
       name: 'zenite-storage',
-      version: 1,
+      version: 7,
+      migrate: (persisted: unknown) => {
+        const p = (persisted || {}) as Record<string, unknown>;
+        return {
+          ...p,
+          dieta: p.dieta || D.dieta(),
+          compras: p.compras || D.compras(),
+          eventos: p.eventos || D.eventos(),
+          hall: p.hall || [...DEFAULT_HALL],
+          companions: p.companions || [],
+          treinos: p.treinos || D.treinos(),
+          deepwork: p.deepwork || D.deepwork(),
+          viagens: p.viagens || D.viagens(),
+          planejamento: p.planejamento || D.planejamento(),
+          casa: p.casa || D.casa(),
+          estudos: p.estudos || D.estudos(),
+          financas: p.financas || D.financas(),
+          boss: p.boss || D.boss(),
+          cerebro: p.cerebro || D.cerebro(),
+          notas: p.notas || D.notas(),
+          midia: p.midia || D.midia(),
+          achievements: p.achievements || [],
+          market: { ...INITIAL_MARKET, ...((p.market as object) || {}) },
+        } as AppState;
+      },
     }
   )
 );
