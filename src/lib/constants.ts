@@ -201,6 +201,15 @@ export const VIAGEM_STATUS: Record<string, string> = {
   quero_ir: 'Quero ir', planejando: 'Planejando', viajando: 'Viajando', ja_fui: 'Já fui', quero_voltar: 'Quero voltar',
 };
 export const PACKING_TEMPLATE = ['Roupas', 'Higiene', 'Documentos', 'Eletrônicos', 'Outros'];
+
+// Sugestões rápidas de itens de mala por grupo (clique para adicionar).
+export const PACKING_SUGGESTIONS: Record<string, string[]> = {
+  Roupas: ['Camisas', 'Calça', 'Sapato', 'Meias', 'Cueca/Calcinha', 'Casaco', 'Pijama', 'Roupa de banho'],
+  Higiene: ['Escova de dente', 'Pasta', 'Shampoo', 'Sabonete', 'Desodorante', 'Perfume', 'Toalha'],
+  Documentos: ['RG/CPF', 'Passaporte', 'Passagens', 'Reservas', 'Cartão', 'Dinheiro'],
+  Eletrônicos: ['Carregador', 'Fone', 'Power bank', 'Adaptador', 'Câmera'],
+  Outros: ['Remédios', 'Óculos de sol', 'Guarda-chuva', 'Snacks'],
+};
 export const AMBIENT_SOUNDS = [
   { id: 'chuva', label: '🌧️ Chuva', type: 'lowpass', freq: 1200 },
   { id: 'cafe', label: '☕ Cafeteria', type: 'bandpass', freq: 700 },
