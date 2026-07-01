@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import type {
   Player, Mission, Settings, DietaState, ComprasState, EventosState, Trofeu, Companion,
   TreinosState, DeepWorkState, Viagem, PlanejamentoState, CasaState, EstudosState,
-  FinancasState, BossState, CerebroState,
+  FinancasState, BossState, CerebroState, Nota, MidiaItem,
 } from './types';
 import { DEFAULT_PLAYER, DEFAULT_SETTINGS, INITIAL_MARKET, DEFAULT_HALL, DEFAULT_BOSSES } from './constants';
 
@@ -22,6 +22,8 @@ const D = {
   financas: (): FinancasState => ({ transacoes: [], metas: [] }),
   boss: (): BossState => ({ bosses: DEFAULT_BOSSES.map((b) => ({ ...b })) }),
   cerebro: (): CerebroState => ({ livros: [], habilidades: [], ideias: [] }),
+  notas: (): Nota[] => [],
+  midia: (): MidiaItem[] => [],
 };
 
 export interface AppState {
@@ -49,6 +51,8 @@ export interface AppState {
   financas: FinancasState;
   boss: BossState;
   cerebro: CerebroState;
+  notas: Nota[];
+  midia: MidiaItem[];
 
   // UI
   route: string;
@@ -81,6 +85,8 @@ export interface AppState {
   setFinancas: (financas: FinancasState) => void;
   setBoss: (boss: BossState) => void;
   setCerebro: (cerebro: CerebroState) => void;
+  setNotas: (notas: Nota[]) => void;
+  setMidia: (midia: MidiaItem[]) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -108,6 +114,8 @@ export const useStore = create<AppState>()(
       financas: D.financas(),
       boss: D.boss(),
       cerebro: D.cerebro(),
+      notas: D.notas(),
+      midia: D.midia(),
 
       route: 'dashboard',
       view: 'dashboard',
@@ -138,10 +146,12 @@ export const useStore = create<AppState>()(
       setFinancas: (financas) => set({ financas }),
       setBoss: (boss) => set({ boss }),
       setCerebro: (cerebro) => set({ cerebro }),
+      setNotas: (notas) => set({ notas }),
+      setMidia: (midia) => set({ midia }),
     }),
     {
       name: 'zenite-storage',
-      version: 5,
+      version: 6,
       migrate: (persisted: unknown) => {
         const p = (persisted || {}) as Record<string, unknown>;
         return {
@@ -160,6 +170,8 @@ export const useStore = create<AppState>()(
           financas: p.financas || D.financas(),
           boss: p.boss || D.boss(),
           cerebro: p.cerebro || D.cerebro(),
+          notas: p.notas || D.notas(),
+          midia: p.midia || D.midia(),
           market: { ...INITIAL_MARKET, ...((p.market as object) || {}) },
         } as AppState;
       },

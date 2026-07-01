@@ -1,4 +1,4 @@
-import type { Player, Difficulty, Mission, Reward } from './types';
+import type { Player, Difficulty, Mission, Reward, Boss } from './types';
 import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, PET_STAGES, PET_STREAK_REQ } from './constants';
 
 // ─── Date helpers ───
@@ -23,6 +23,32 @@ export function getWeekStart(): string {
   const diff = d.getDate() - day + (day === 0 ? -6 : 1);
   d.setDate(diff);
   return d.toISOString().slice(0, 10);
+}
+
+// Segunda-feira (chave da semana) a partir de um 'YYYY-MM-DD' local — tz-safe.
+export function weekKey(dateStr: string): string {
+  const [y, m, dd] = dateStr.split('-').map(Number);
+  const d = new Date(y, m - 1, dd);
+  const day = d.getDay();
+  d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Boss recorrente (semanal/mensal) volta a aparecer quando muda o período em que foi derrotado.
+export function bossShouldReset(boss: Boss): boolean {
+  if (!boss.derrotado || !boss.data || boss.periodo === 'unico') return false;
+  if (boss.periodo === 'semanal') return weekKey(boss.data) !== weekKey(today());
+  if (boss.periodo === 'mensal') return boss.data.slice(0, 7) !== today().slice(0, 7);
+  return false;
+}
+
+export function refreshBosses(bosses: Boss[]): { bosses: Boss[]; changed: boolean } {
+  let changed = false;
+  const next = bosses.map((b) => {
+    if (bossShouldReset(b)) { changed = true; return { ...b, derrotado: false, data: null }; }
+    return b;
+  });
+  return { bosses: next, changed };
 }
 
 // ─── UID ───

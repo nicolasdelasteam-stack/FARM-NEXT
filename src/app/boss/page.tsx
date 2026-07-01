@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
-import { uid, today, addCoins, addXP } from '@/lib/engine';
+import { uid, today, addCoins, addXP, refreshBosses } from '@/lib/engine';
 import { BOSS_DIFICULDADE, BOSS_PERIODO } from '@/lib/constants';
 import type { Boss } from '@/lib/types';
 
@@ -22,6 +22,13 @@ export default function BossPage() {
 
   const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
   const EMO = ['👿', '🌀', '🌑', '📱', '🔥', '🛋️', '🍩', '💀', '🐉', '👹', '🧟', '⚰️'];
+
+  // Bosses semanais/mensais voltam a aparecer quando muda a semana/mês em que foram derrotados.
+  useEffect(() => {
+    const { bosses, changed } = refreshBosses(boss.bosses);
+    if (changed) setBoss({ ...boss, bosses });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const derrotar = (id: string) => {
     const b = boss.bosses.find((x) => x.id === id);
@@ -130,6 +137,7 @@ export default function BossPage() {
                 {b.derrotado
                   ? <div className="flex items-center gap-2">
                       <span className="text-xs text-emerald-400 font-semibold">✓ Derrotado {b.data ? new Date(b.data).toLocaleDateString('pt-BR') : ''}</span>
+                      {b.periodo !== 'unico' && <span className="text-[10px] text-zinc-500">· renasce {b.periodo === 'semanal' ? 'na próxima semana' : 'no próximo mês'}</span>}
                       <button onClick={() => reviver(b.id)} className="text-[11px] text-zinc-600 hover:text-zinc-300">reativar</button>
                     </div>
                   : <button onClick={() => derrotar(b.id)} className="px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded-lg text-xs font-bold">Derrotar</button>}

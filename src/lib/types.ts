@@ -205,3 +205,21 @@ export interface LivroCerebro { id: string; titulo: string; autor: string; link:
 export interface Habilidade { id: string; nome: string; icon: string; notas: string; }
 export interface Ideia { id: string; texto: string; categoria: string; }
 export interface CerebroState { livros: LivroCerebro[]; habilidades: Habilidade[]; ideias: Ideia[]; }
+
+// ─── FARM-NEXT extras (Notas) ───
+export interface Nota { id: string; titulo: string; conteudo: string; categoria: string; data: string; }
+
+// ─── FARM-NEXT extras (Mídia — filmes/séries/animes, aba 12 do Notion) ───
+export type MidiaStatus = 'quero_assistir' | 'assistindo' | 'assistido';
+export type MidiaGrupo = 'filme' | 'serie' | 'anime';
+export interface MidiaItem {
+  id: string;
+  titulo: string;
+  capa: string;          // emoji ou URL de capa
+  grupo: MidiaGrupo;
+  status: MidiaStatus;
+  estrelas: number;      // 0-5
+  favorito: boolean;
+  temporadas: number;    // total (séries/animes)
+  vistas: number;        // temporadas já assistidas
+}
