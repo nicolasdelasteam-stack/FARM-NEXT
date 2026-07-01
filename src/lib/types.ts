@@ -173,9 +173,10 @@ export interface Livro { id: string; titulo: string; tipo: string; link: string;
 export interface EstudosState { materias: Materia[]; biblioteca: Livro[]; }
 
 // ─── FARM-NEXT extras (Finanças) ───
-export interface Transacao { id: string; desc: string; valor: number; tipo: 'receita' | 'despesa'; data: string; }
+export interface Transacao { id: string; desc: string; valor: number; tipo: 'receita' | 'despesa'; categoria?: string; data: string; }
 export interface MetaFinanceira { id: string; nome: string; icon: string; alvo: number; guardado: number; prioridade: Prioridade; }
-export interface FinancasState { transacoes: Transacao[]; metas: MetaFinanceira[]; }
+export interface Investimento { id: string; nome: string; tipo: string; valor: number; rendimento: number; }
+export interface FinancasState { transacoes: Transacao[]; metas: MetaFinanceira[]; investimentos: Investimento[]; }
 
 // ─── FARM-NEXT extras (Boss Fight) ───
 export type BossDificuldade = 'facil' | 'media' | 'dificil' | 'epico';

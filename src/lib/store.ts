@@ -19,7 +19,7 @@ const D = {
   planejamento: (): PlanejamentoState => ({ ano: YEAR, metas: [], prioridades: [], disciplina: {} }),
   casa: (): CasaState => ({ areas: [], tarefas: [], lembretes: [] }),
   estudos: (): EstudosState => ({ materias: [], biblioteca: [] }),
-  financas: (): FinancasState => ({ transacoes: [], metas: [] }),
+  financas: (): FinancasState => ({ transacoes: [], metas: [], investimentos: [] }),
   boss: (): BossState => ({ bosses: DEFAULT_BOSSES.map((b) => ({ ...b })) }),
   cerebro: (): CerebroState => ({ livros: [], habilidades: [], ideias: [] }),
   notas: (): Nota[] => [],
@@ -155,7 +155,7 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'zenite-storage',
-      version: 7,
+      version: 8,
       migrate: (persisted: unknown) => {
         const p = (persisted || {}) as Record<string, unknown>;
         return {
@@ -171,7 +171,7 @@ export const useStore = create<AppState>()(
           planejamento: p.planejamento || D.planejamento(),
           casa: p.casa || D.casa(),
           estudos: p.estudos || D.estudos(),
-          financas: p.financas || D.financas(),
+          financas: { ...D.financas(), ...((p.financas as object) || {}) },
           boss: p.boss || D.boss(),
           cerebro: p.cerebro || D.cerebro(),
           notas: p.notas || D.notas(),
