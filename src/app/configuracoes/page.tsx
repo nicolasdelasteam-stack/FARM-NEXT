@@ -1,6 +1,8 @@
 'use client';
 
 import { useStore } from '@/lib/store';
+import NotifSettings from '@/components/NotifSettings';
+import CloudSettings from '@/components/CloudSettings';
 
 export default function ConfigPage() {
   const player = useStore((s) => s.player);
@@ -54,6 +56,9 @@ export default function ConfigPage() {
           ))}
         </div>
       </div>
+
+      <NotifSettings />
+      <CloudSettings />
     </div>
   );
 }

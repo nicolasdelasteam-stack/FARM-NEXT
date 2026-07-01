@@ -120,3 +120,54 @@ export interface LootBoxTier {
   silver: Rarity[];
   gold: Rarity[];
 }
+
+// ─── FARM-NEXT extras (Fase 1) ───
+export type Prioridade = 'urgente' | 'algum_dia' | 'pode_esperar';
+
+export interface Refeicao { id: string; dia: string; horario: string; tipo: string; descricao: string; }
+export interface PesoLog { id: string; data: string; peso: number; gordura: number | null; foto?: string; }
+export interface Receita { id: string; nome: string; tag: string; ingredientes: string; }
+export interface DietaState { refeicoes: Refeicao[]; pesos: PesoLog[]; receitas: Receita[]; }
+
+export interface CompraItem { id: string; nome: string; icon: string; comprado: boolean; }
+export interface DesejoItem { id: string; nome: string; valor: number; prioridade: Prioridade; comprado: boolean; }
+export interface ComprasState { mercado: CompraItem[]; desejos: DesejoItem[]; }
+
+export type EventoStatus = 'ativo' | 'concluido' | 'expirado';
+export interface Evento { id: string; nome: string; descricao: string; inicio: string; fim: string; recompensa: string; recompensaCoins: number; status: EventoStatus; resgatado: boolean; }
+export interface ItemInventario { id: string; nome: string; icon: string; origem: string; usado: boolean; }
+export interface EventosState { eventos: Evento[]; inventario: ItemInventario[]; }
+
+export type TrofeuTipo = 'conquista' | 'titulo' | 'trofeu' | 'medalha';
+export type TrofeuStatus = 'bloqueado' | 'disponivel' | 'resgatado';
+export interface Trofeu { id: string; nome: string; icon: string; descricao: string; tipo: TrofeuTipo; requisito: string; recompensaCoins: number; recompensaXp: number; status: TrofeuStatus; data: string | null; }
+
+export type CompanionTipo = 'amigo' | 'pet' | 'parceiro' | 'familia';
+export interface Companion { id: string; nome: string; tipo: CompanionTipo; emoji: string; aniversario: string; dataJuntos: string; notas: string; }
+
+// ─── FARM-NEXT extras (Fase 2) ───
+export interface TreinoPerfil { peso: number; altura: number; idade: number; sexo: 'm' | 'f'; atividade: number; objetivo: 'cutting' | 'manutencao' | 'bulking'; proteinaKg: number; gorduraKg: number; }
+export interface ExercicioT { id: string; nome: string; series: number; reps: string; peso: number; }
+export interface RotinaGrupo { id: string; grupo: string; exercicios: ExercicioT[]; }
+export interface TreinoLog { id: string; data: string; peso: number; }
+export interface TreinosState { perfil: TreinoPerfil; rotinas: RotinaGrupo[]; logs: TreinoLog[]; }
+
+export interface MetaVisual { id: string; texto: string; img: string; }
+export interface DeepWorkState { checklist: boolean[]; metas: MetaVisual[]; }
+
+export type ViagemStatus = 'quero_ir' | 'planejando' | 'viajando' | 'ja_fui' | 'quero_voltar';
+export interface ViagemItem { id: string; texto: string; grupo: string; done: boolean; }
+export interface Viagem { id: string; local: string; inicio: string; fim: string; custo: number; status: ViagemStatus; itens: ViagemItem[]; }
+
+export interface MetaAno { id: string; texto: string; done: boolean; }
+export interface PlanejamentoState { ano: number; metas: MetaAno[]; prioridades: string[]; disciplina: Record<string, number>; }
+
+export interface CasaArea { id: string; nome: string; emoji: string; objetivo: string; tarefa: string; }
+export interface CasaTarefa { id: string; nome: string; freq: string; done: boolean; }
+export interface CasaLembrete { id: string; texto: string; done: boolean; }
+export interface CasaState { areas: CasaArea[]; tarefas: CasaTarefa[]; lembretes: CasaLembrete[]; }
+
+export type LivroStatus = 'quero_ler' | 'lendo' | 'lido';
+export interface Materia { id: string; nome: string; emoji: string; dia: string; horario: string; professor: string; resumo: string; }
+export interface Livro { id: string; titulo: string; tipo: string; link: string; status: LivroStatus; progresso: number; }
+export interface EstudosState { materias: Materia[]; biblioteca: Livro[]; }
