@@ -32,6 +32,9 @@ npm run dev
 - 📸 **Foto na pesagem** (Dieta) — anexe uma foto (redimensionada no navegador) a cada registro de peso.
 - ☁️ **Sincronização na nuvem (Supabase)** — login por link mágico + salvar/baixar o progresso entre dispositivos (ativa ao configurar as variáveis).
 
+## Melhorias recentes
+- 💰 **Finanças** (`/financas`) — agora **persiste** no estado global (antes os dados sumiam ao recarregar) e ganhou aba **Metas**: crie um objetivo (ex.: fone novo) com valor-alvo, ícone e prioridade (urgente / algum dia / pode esperar), acompanhe uma barra de progresso e registre quanto já juntou.
+
 ## Arquitetura
 ```
 src/lib/types.ts       # modelo de dados (TypeScript)

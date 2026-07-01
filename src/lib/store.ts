@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type {
   Player, Mission, Settings, DietaState, ComprasState, EventosState, Trofeu, Companion,
   TreinosState, DeepWorkState, Viagem, PlanejamentoState, CasaState, EstudosState,
+  FinancasState,
 } from './types';
 import { DEFAULT_PLAYER, DEFAULT_SETTINGS, INITIAL_MARKET, DEFAULT_HALL } from './constants';
 
@@ -18,6 +19,7 @@ const D = {
   planejamento: (): PlanejamentoState => ({ ano: YEAR, metas: [], prioridades: [], disciplina: {} }),
   casa: (): CasaState => ({ areas: [], tarefas: [], lembretes: [] }),
   estudos: (): EstudosState => ({ materias: [], biblioteca: [] }),
+  financas: (): FinancasState => ({ transacoes: [], metas: [] }),
 };
 
 export interface AppState {
@@ -42,6 +44,7 @@ export interface AppState {
   planejamento: PlanejamentoState;
   casa: CasaState;
   estudos: EstudosState;
+  financas: FinancasState;
 
   // UI
   route: string;
@@ -71,6 +74,7 @@ export interface AppState {
   setPlanejamento: (planejamento: PlanejamentoState) => void;
   setCasa: (casa: CasaState) => void;
   setEstudos: (estudos: EstudosState) => void;
+  setFinancas: (financas: FinancasState) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -95,6 +99,7 @@ export const useStore = create<AppState>()(
       planejamento: D.planejamento(),
       casa: D.casa(),
       estudos: D.estudos(),
+      financas: D.financas(),
 
       route: 'dashboard',
       view: 'dashboard',
@@ -122,10 +127,11 @@ export const useStore = create<AppState>()(
       setPlanejamento: (planejamento) => set({ planejamento }),
       setCasa: (casa) => set({ casa }),
       setEstudos: (estudos) => set({ estudos }),
+      setFinancas: (financas) => set({ financas }),
     }),
     {
       name: 'zenite-storage',
-      version: 3,
+      version: 4,
       migrate: (persisted: unknown) => {
         const p = (persisted || {}) as Record<string, unknown>;
         return {
@@ -141,6 +147,7 @@ export const useStore = create<AppState>()(
           planejamento: p.planejamento || D.planejamento(),
           casa: p.casa || D.casa(),
           estudos: p.estudos || D.estudos(),
+          financas: p.financas || D.financas(),
           market: { ...INITIAL_MARKET, ...((p.market as object) || {}) },
         } as AppState;
       },

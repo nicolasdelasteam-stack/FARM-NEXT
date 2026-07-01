@@ -171,3 +171,8 @@ export type LivroStatus = 'quero_ler' | 'lendo' | 'lido';
 export interface Materia { id: string; nome: string; emoji: string; dia: string; horario: string; professor: string; resumo: string; }
 export interface Livro { id: string; titulo: string; tipo: string; link: string; status: LivroStatus; progresso: number; }
 export interface EstudosState { materias: Materia[]; biblioteca: Livro[]; }
+
+// ─── FARM-NEXT extras (Finanças) ───
+export interface Transacao { id: string; desc: string; valor: number; tipo: 'receita' | 'despesa'; data: string; }
+export interface MetaFinanceira { id: string; nome: string; icon: string; alvo: number; guardado: number; prioridade: Prioridade; }
+export interface FinancasState { transacoes: Transacao[]; metas: MetaFinanceira[]; }
