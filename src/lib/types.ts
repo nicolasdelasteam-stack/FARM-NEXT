@@ -100,6 +100,9 @@ export interface Player {
   pet: Pet;
   capa: number;
   xpBoostUntil?: number;
+  photo?: string;            // foto/gif de perfil (data-URL); se definida, substitui o avatar emoji
+  objetivoPrincipal?: string;
+  objetivoSecundario?: string;
 }
 
 export interface Settings {

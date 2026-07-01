@@ -63,7 +63,10 @@ export default function Sidebar() {
       <div className="p-3 border-b border-zinc-800 space-y-2 shrink-0">
         {player.gameOver && <div className="text-center py-1 text-xs font-bold bg-red-600 rounded">💀 DERROTADO</div>}
         <div className="flex items-center gap-2">
-          <span className="text-2xl">{player.avatar}</span>
+          {player.photo
+            // eslint-disable-next-line @next/next/no-img-element -- foto/gif de perfil (data-URL)
+            ? <img src={player.photo} alt="" className="w-8 h-8 rounded-full object-cover border border-violet-600" />
+            : <span className="text-2xl">{player.avatar}</span>}
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold truncate">{player.name}</div>
             <div className="text-xs text-zinc-500">{player.title} · Nv {player.level}</div>
