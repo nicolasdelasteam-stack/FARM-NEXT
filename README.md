@@ -41,6 +41,14 @@ npm run dev
 - 📝 **Notas** (`/notas`) — agora **persistem** no estado global (antes sumiam ao recarregar), com data e filtro por categoria.
 - 💪 **Academia** (`/academia`) — virou atalho para **Treinos** (que concentra macros, rotina e progresso), evitando duplicação.
 
+## Loop de RPG ligado (pente fino)
+O núcleo de gamificação existia no engine mas estava **desconectado da interface**. Agora funciona ponta a ponta:
+- 🎯 **Campo** (`/campo`) — dá para **criar** missões (título, tipo, dificuldade, skill, prazo) e **concluir** de verdade. Concluir concede XP + moedas + atributo, evolui skills, sobe de nível, alimenta a **ofensiva**/pet e ataca o **boss automático** (que aparece e é derrotado no loop). Também dá para reabrir e excluir.
+- 💀 **Reviver** — o botão de reviver no game over agora funciona (gasta moedas, volta com 50% do HP).
+- 🔄 **Reset diário** — ao virar o dia, zera o XP do dia, aplica a continuidade da ofensiva (com proteção de streak) e reabre missões diárias/hábitos.
+- 🕯️ **Caverna** — cada sessão de foco concluída soma **minutos de foco** (que aparecem em Estatísticas) e concede XP.
+- 🏆 **Conquistas** — as conquistas desbloqueadas pelo progresso agora têm botão **Resgatar** que paga a recompensa.
+
 ## Arquitetura
 ```
 src/lib/types.ts       # modelo de dados (TypeScript)
