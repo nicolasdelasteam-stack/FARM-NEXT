@@ -85,9 +85,11 @@ export function calcReward(difficulty: Difficulty): Reward {
 
 export function addXP(player: Player, amount: number, settings: { maxDailyXp: number; dailyXpGoal: number }, skillType?: string): Player {
   const p = { ...player };
+  // Dobro de XP enquanto o boost estiver ativo (item da loja / recompensa de evento).
+  const boosted = (player.xpBoostUntil && player.xpBoostUntil > Date.now()) ? amount * 2 : amount;
   // Daily XP cap
   const cap = settings.maxDailyXp || 500;
-  const effective = Math.min(amount, Math.max(0, cap - (p.dailyXp || 0)));
+  const effective = Math.min(boosted, Math.max(0, cap - (p.dailyXp || 0)));
   p.xp += effective;
   p.dailyXp = (p.dailyXp || 0) + effective;
 
@@ -132,6 +134,20 @@ export function damageHp(player: Player, amount: number, settings: { gentleMode?
     p.deaths = (p.deaths || 0) + 1;
   }
   return p;
+}
+
+// Aplica o efeito de um item de recompensa (inventário de eventos / loja).
+export function applyItemEffect(player: Player, efeito: string | undefined): { player: Player; msg: string } {
+  let p = { ...player };
+  switch (efeito) {
+    case 'xp2x': p = { ...p, xpBoostUntil: Date.now() + 2 * 3600 * 1000 }; return { player: p, msg: 'Dobro de XP ativado por 2h ⚡' };
+    case 'heal_full': p = healHp(p, p.maxHp); return { player: p, msg: 'HP totalmente restaurado ❤️' };
+    case 'heal_30': p = healHp(p, 30); return { player: p, msg: '+30 HP 🧪' };
+    case 'coins_50': p = addCoins(p, 50); return { player: p, msg: '+50 moedas 🪙' };
+    case 'coins_100': p = addCoins(p, 100); return { player: p, msg: '+100 moedas 🪙' };
+    case 'freeze': p = { ...p, streakFreeze: (p.streakFreeze || 0) + 1 }; return { player: p, msg: 'Ofensiva protegida ❄️' };
+    default: return { player: p, msg: 'Item usado ✓' };
+  }
 }
 
 export function healHp(player: Player, amount: number): Player {

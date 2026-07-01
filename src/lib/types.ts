@@ -134,8 +134,8 @@ export interface DesejoItem { id: string; nome: string; valor: number; prioridad
 export interface ComprasState { mercado: CompraItem[]; desejos: DesejoItem[]; }
 
 export type EventoStatus = 'ativo' | 'concluido' | 'expirado';
-export interface Evento { id: string; nome: string; descricao: string; inicio: string; fim: string; recompensa: string; recompensaCoins: number; status: EventoStatus; resgatado: boolean; }
-export interface ItemInventario { id: string; nome: string; icon: string; origem: string; usado: boolean; }
+export interface Evento { id: string; nome: string; descricao: string; inicio: string; fim: string; recompensa: string; recompensaCoins: number; recompensaEfeito?: string; recompensaIcon?: string; status: EventoStatus; resgatado: boolean; }
+export interface ItemInventario { id: string; nome: string; icon: string; origem: string; usado: boolean; efeito?: string; }
 export interface EventosState { eventos: Evento[]; inventario: ItemInventario[]; }
 
 export type TrofeuTipo = 'conquista' | 'titulo' | 'trofeu' | 'medalha';

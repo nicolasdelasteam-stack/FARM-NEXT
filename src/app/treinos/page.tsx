@@ -25,7 +25,7 @@ export default function TreinosPage() {
   const carbKg = p.peso ? (carbG / p.peso).toFixed(1) : '0';
 
   const addGrupo = () => setTreinos({ ...treinos, rotinas: [...treinos.rotinas, { id: uid(), grupo: novoGrupo, exercicios: [] }] });
-  const addExercicio = (rid: string) => setTreinos({ ...treinos, rotinas: treinos.rotinas.map((r) => r.id === rid ? { ...r, exercicios: [...r.exercicios, { id: uid(), nome: 'Novo exercício', series: 3, reps: '10', peso: 0 }] } : r) });
+  const addExercicio = (rid: string, nome = 'Novo exercício') => setTreinos({ ...treinos, rotinas: treinos.rotinas.map((r) => r.id === rid ? { ...r, exercicios: [...r.exercicios, { id: uid(), nome, series: 3, reps: '10', peso: 0 }] } : r) });
   const updEx = (rid: string, eid: string, patch: Partial<{ nome: string; series: number; reps: string; peso: number }>) =>
     setTreinos({ ...treinos, rotinas: treinos.rotinas.map((r) => r.id === rid ? { ...r, exercicios: r.exercicios.map((e) => e.id === eid ? { ...e, ...patch } : e) } : r) });
   const delEx = (rid: string, eid: string) => setTreinos({ ...treinos, rotinas: treinos.rotinas.map((r) => r.id === rid ? { ...r, exercicios: r.exercicios.filter((e) => e.id !== eid) } : r) });
@@ -105,8 +105,18 @@ export default function TreinosPage() {
               <div key={r.id} className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
                 <div className="flex justify-between items-center mb-2">
                   <div className="font-bold">{r.grupo}</div>
-                  <div className="flex gap-2"><button onClick={() => addExercicio(r.id)} className="text-xs text-violet-400 hover:text-violet-300">+ exercício</button><button onClick={() => delGrupo(r.id)} className="text-xs text-zinc-600 hover:text-red-400">excluir</button></div>
+                  <div className="flex gap-2"><button onClick={() => addExercicio(r.id)} className="text-xs text-violet-400 hover:text-violet-300">+ personalizado</button><button onClick={() => delGrupo(r.id)} className="text-xs text-zinc-600 hover:text-red-400">excluir</button></div>
                 </div>
+                {(() => {
+                  const guia = MUSCLE_GUIDE.find((m) => m.grupo === r.grupo)?.exercicios || [];
+                  return guia.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 mb-2 pb-2 border-b border-zinc-800">
+                      {guia.map((ex) => (
+                        <button key={ex} onClick={() => addExercicio(r.id, ex)} className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-violet-600 text-xs text-zinc-300" title="Adicionar à rotina">+ {ex}</button>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
                 {r.exercicios.map((e) => (
                   <div key={e.id} className="flex items-center gap-2 py-1">
                     <input className={sm + ' flex-1'} value={e.nome} onChange={(ev) => updEx(r.id, e.id, { nome: ev.target.value })} />

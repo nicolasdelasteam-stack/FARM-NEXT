@@ -73,6 +73,16 @@ export const BOSS_PERIODO: Record<string, string> = {
   semanal: 'Semanal', mensal: 'Mensal', unico: 'Único',
 };
 
+// Itens de recompensa com efeito real (usados como prêmio de eventos / inventário).
+export const REWARD_ITEMS: { id: string; nome: string; icon: string; efeito: string; desc: string }[] = [
+  { id: 'xp2x', nome: 'Poção do Dobro de XP', icon: '⚡', efeito: 'xp2x', desc: 'Dobro de XP por 2 horas' },
+  { id: 'heal_full', nome: 'Elixir da Vida', icon: '❤️', efeito: 'heal_full', desc: 'Restaura todo o HP' },
+  { id: 'heal_30', nome: 'Poção de Cura', icon: '🧪', efeito: 'heal_30', desc: '+30 HP' },
+  { id: 'coins_50', nome: 'Baú de Moedas', icon: '🪙', efeito: 'coins_50', desc: '+50 moedas' },
+  { id: 'coins_100', nome: 'Baú Grande de Moedas', icon: '💰', efeito: 'coins_100', desc: '+100 moedas' },
+  { id: 'freeze', nome: 'Escudo de Ofensiva', icon: '❄️', efeito: 'freeze', desc: 'Protege a ofensiva 1 dia' },
+];
+
 export const PET_STAGES = [
   { icon: '🥚', name: 'Ovo', desc: 'Choca com missões diárias!' },
   { icon: '🐣', name: 'Filhote', desc: 'Streak ≥ 3 para evoluir.' },

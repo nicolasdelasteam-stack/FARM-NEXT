@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { uid, today, addCoins } from '@/lib/engine';
+import { uid, today, addCoins, applyItemEffect } from '@/lib/engine';
+import { REWARD_ITEMS } from '@/lib/constants';
 
 export default function EventosPage() {
   const eventos = useStore((s) => s.eventos);
@@ -15,9 +16,12 @@ export default function EventosPage() {
   const [inicio, setInicio] = useState(today());
   const [fim, setFim] = useState('');
   const [recompensa, setRecompensa] = useState('');
+  const [itemId, setItemId] = useState('custom');
   const [coins, setCoins] = useState('20');
+  const [msg, setMsg] = useState('');
 
   const t = today();
+  const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 3500); };
   const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
 
   const statusOf = (e: { inicio: string; fim: string; resgatado: boolean }) => {
@@ -28,18 +32,35 @@ export default function EventosPage() {
 
   const addEvento = () => {
     if (!nome.trim()) return;
-    setEventos({ ...eventos, eventos: [...eventos.eventos, { id: uid(), nome: nome.trim(), descricao: desc.trim(), inicio, fim, recompensa: recompensa.trim() || 'Recompensa', recompensaCoins: parseInt(coins) || 0, status: 'ativo', resgatado: false }] });
-    setNome(''); setDesc(''); setFim(''); setRecompensa(''); setOpen(false);
+    const item = REWARD_ITEMS.find((r) => r.id === itemId);
+    setEventos({ ...eventos, eventos: [...eventos.eventos, {
+      id: uid(), nome: nome.trim(), descricao: desc.trim(), inicio, fim,
+      recompensa: item ? item.nome : (recompensa.trim() || 'Recompensa'),
+      recompensaCoins: parseInt(coins) || 0,
+      recompensaEfeito: item?.efeito,
+      recompensaIcon: item?.icon,
+      status: 'ativo', resgatado: false,
+    }] });
+    setNome(''); setDesc(''); setFim(''); setRecompensa(''); setItemId('custom'); setOpen(false);
   };
 
   const resgatar = (id: string) => {
     const ev = eventos.eventos.find((e) => e.id === id);
     if (!ev || ev.resgatado) return;
-    const novoInv = [...eventos.inventario, { id: uid(), nome: ev.recompensa, icon: '🎁', origem: ev.nome, usado: false }];
+    const novoInv = [...eventos.inventario, { id: uid(), nome: ev.recompensa, icon: ev.recompensaIcon || '🎁', origem: ev.nome, usado: false, efeito: ev.recompensaEfeito }];
     setEventos({ ...eventos, eventos: eventos.eventos.map((e) => e.id === id ? { ...e, resgatado: true, status: 'concluido' as const } : e), inventario: novoInv });
     if (ev.recompensaCoins > 0) setPlayer(addCoins(player, ev.recompensaCoins));
+    flash(`🎁 "${ev.recompensa}" foi para o inventário!`);
   };
-  const usarItem = (id: string) => setEventos({ ...eventos, inventario: eventos.inventario.map((i) => i.id === id ? { ...i, usado: true } : i) });
+
+  const usarItem = (id: string) => {
+    const it = eventos.inventario.find((i) => i.id === id);
+    if (!it || it.usado) return;
+    const res = applyItemEffect(player, it.efeito);
+    setPlayer(res.player);
+    setEventos({ ...eventos, inventario: eventos.inventario.map((i) => i.id === id ? { ...i, usado: true } : i) });
+    flash(res.msg);
+  };
   const delEvento = (id: string) => setEventos({ ...eventos, eventos: eventos.eventos.filter((e) => e.id !== id) });
 
   const daysTo = (d: string) => d ? Math.ceil((new Date(d).getTime() - new Date(t).getTime()) / 86400000) : null;
@@ -59,6 +80,8 @@ export default function EventosPage() {
         <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Novo evento'}</button>
       </div>
 
+      {msg && <div className="mb-4 p-2 rounded-lg bg-violet-950/50 border border-violet-800/50 text-sm text-violet-200 text-center">{msg}</div>}
+
       {avisos.length > 0 && (
         <div className="mb-4 p-3 rounded-xl bg-amber-950/40 border border-amber-800/50 space-y-1">
           {avisos.map((a, i) => <div key={i} className="text-sm text-amber-300">{a}</div>)}
@@ -73,9 +96,15 @@ export default function EventosPage() {
             <div><label className="text-xs text-zinc-500">Início</label><input className={inp} type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} /></div>
             <div><label className="text-xs text-zinc-500">Fim</label><input className={inp} type="date" value={fim} onChange={(e) => setFim(e.target.value)} /></div>
           </div>
+          <select className={inp} value={itemId} onChange={(e) => setItemId(e.target.value)}>
+            <option value="custom">🎁 Recompensa personalizada (só texto)</option>
+            {REWARD_ITEMS.map((r) => <option key={r.id} value={r.id}>{r.icon} {r.nome} — {r.desc}</option>)}
+          </select>
           <div className="grid grid-cols-2 gap-2">
-            <input className={inp} placeholder="Recompensa (ex: Skin rara)" value={recompensa} onChange={(e) => setRecompensa(e.target.value)} />
-            <input className={inp} type="number" placeholder="Moedas" value={coins} onChange={(e) => setCoins(e.target.value)} />
+            {itemId === 'custom'
+              ? <input className={inp} placeholder="Recompensa (ex: Skin rara)" value={recompensa} onChange={(e) => setRecompensa(e.target.value)} />
+              : <div className="text-[11px] text-emerald-400 flex items-center px-1">✓ Item funcional — usar no inventário aplica o efeito.</div>}
+            <input className={inp} type="number" placeholder="Moedas extras" value={coins} onChange={(e) => setCoins(e.target.value)} />
           </div>
           <button onClick={addEvento} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Criar evento</button>
         </div>
