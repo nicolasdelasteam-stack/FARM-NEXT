@@ -3,9 +3,9 @@ import { persist } from 'zustand/middleware';
 import type {
   Player, Mission, Settings, DietaState, ComprasState, EventosState, Trofeu, Companion,
   TreinosState, DeepWorkState, Viagem, PlanejamentoState, CasaState, EstudosState,
-  FinancasState,
+  FinancasState, BossState, CerebroState,
 } from './types';
-import { DEFAULT_PLAYER, DEFAULT_SETTINGS, INITIAL_MARKET, DEFAULT_HALL } from './constants';
+import { DEFAULT_PLAYER, DEFAULT_SETTINGS, INITIAL_MARKET, DEFAULT_HALL, DEFAULT_BOSSES } from './constants';
 
 const YEAR = new Date().getFullYear();
 
@@ -20,6 +20,8 @@ const D = {
   casa: (): CasaState => ({ areas: [], tarefas: [], lembretes: [] }),
   estudos: (): EstudosState => ({ materias: [], biblioteca: [] }),
   financas: (): FinancasState => ({ transacoes: [], metas: [] }),
+  boss: (): BossState => ({ bosses: DEFAULT_BOSSES.map((b) => ({ ...b })) }),
+  cerebro: (): CerebroState => ({ livros: [], habilidades: [], ideias: [] }),
 };
 
 export interface AppState {
@@ -45,6 +47,8 @@ export interface AppState {
   casa: CasaState;
   estudos: EstudosState;
   financas: FinancasState;
+  boss: BossState;
+  cerebro: CerebroState;
 
   // UI
   route: string;
@@ -75,6 +79,8 @@ export interface AppState {
   setCasa: (casa: CasaState) => void;
   setEstudos: (estudos: EstudosState) => void;
   setFinancas: (financas: FinancasState) => void;
+  setBoss: (boss: BossState) => void;
+  setCerebro: (cerebro: CerebroState) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -100,6 +106,8 @@ export const useStore = create<AppState>()(
       casa: D.casa(),
       estudos: D.estudos(),
       financas: D.financas(),
+      boss: D.boss(),
+      cerebro: D.cerebro(),
 
       route: 'dashboard',
       view: 'dashboard',
@@ -128,10 +136,12 @@ export const useStore = create<AppState>()(
       setCasa: (casa) => set({ casa }),
       setEstudos: (estudos) => set({ estudos }),
       setFinancas: (financas) => set({ financas }),
+      setBoss: (boss) => set({ boss }),
+      setCerebro: (cerebro) => set({ cerebro }),
     }),
     {
       name: 'zenite-storage',
-      version: 4,
+      version: 5,
       migrate: (persisted: unknown) => {
         const p = (persisted || {}) as Record<string, unknown>;
         return {
@@ -148,6 +158,8 @@ export const useStore = create<AppState>()(
           casa: p.casa || D.casa(),
           estudos: p.estudos || D.estudos(),
           financas: p.financas || D.financas(),
+          boss: p.boss || D.boss(),
+          cerebro: p.cerebro || D.cerebro(),
           market: { ...INITIAL_MARKET, ...((p.market as object) || {}) },
         } as AppState;
       },

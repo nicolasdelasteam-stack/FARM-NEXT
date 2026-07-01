@@ -1,4 +1,4 @@
-import type { Difficulty, Reward, SkillName, AttrName, Trofeu } from './types';
+import type { Difficulty, Reward, SkillName, AttrName, Trofeu, Boss } from './types';
 
 export const LEVELS = [
   { level: 1,  xpNeeded: 100,  title: 'Aprendiz' },
@@ -53,6 +53,25 @@ export const BOSSES = [
   { name: 'Mestre da Distração', lore: 'Gênio das notificações.', hp: 220, icon: '📱' },
   { name: 'Titã do Burnout', lore: 'Chefe final.', hp: 350, icon: '🔥' },
 ];
+
+// Bosses da vida real (aba "Boss Fight" do Notion). Só aparecem no Bestiário depois de derrotados.
+export const DEFAULT_BOSSES: Boss[] = [
+  { id: 'b_sedentarismo', nome: 'O Sedentarismo', icon: '🛋️', lore: 'Criatura que te prende ao sofá e sussurra "amanhã eu começo".', dificuldade: 'media', periodo: 'semanal', comoVencer: 'Treinar pelo menos 4x na semana.', requisito: 'Completar 4 treinos na semana', penalidade: 'Perde 10 de HP e a ofensiva enfraquece.', recompensa: 'Poção de disposição', recompensaCoins: 80, recompensaXp: 150, condicao: 'Aparece toda segunda-feira.', derrotado: false, data: null },
+  { id: 'b_acucar', nome: 'Senhor do Açúcar', icon: '🍩', lore: 'Tenta te seduzir com doces e fast food fora do plano.', dificuldade: 'media', periodo: 'semanal', comoVencer: 'Cumprir a dieta a semana toda (máx. 2 refeições livres).', requisito: 'Semana dentro da dieta', penalidade: 'Progresso de peso trava.', recompensa: 'Refeição livre garantida', recompensaCoins: 60, recompensaXp: 120, condicao: 'Aparece quando há registro de dieta.', derrotado: false, data: null },
+  { id: 'b_procrastinacao', nome: 'A Procrastinação', icon: '👿', lore: 'Sombra que sussurra "depois eu faço".', dificuldade: 'dificil', periodo: 'semanal', comoVencer: 'Zerar as tarefas atrasadas até domingo.', requisito: 'Nenhuma missão vencida na semana', penalidade: 'Missões acumulam e o Caos cresce.', recompensa: 'Baú de foco', recompensaCoins: 100, recompensaXp: 200, condicao: 'Aparece com tarefas pendentes.', derrotado: false, data: null },
+  { id: 'b_burnout', nome: 'Titã do Burnout', icon: '🔥', lore: 'Chefe final — surge de tanto correr sem descanso.', dificuldade: 'epico', periodo: 'mensal', comoVencer: 'Fechar o mês com disciplina alta e sono/descanso em dia.', requisito: 'Mês com disciplina ≥ 80%', penalidade: 'Reset da ofensiva e -20 HP.', recompensa: 'Título: Inabalável', recompensaCoins: 250, recompensaXp: 500, condicao: 'Aparece no último dia do mês.', derrotado: false, data: null },
+];
+
+export const BOSS_DIFICULDADE: Record<string, { label: string; color: string }> = {
+  facil: { label: 'Fácil', color: 'text-emerald-400' },
+  media: { label: 'Média', color: 'text-yellow-400' },
+  dificil: { label: 'Difícil', color: 'text-orange-400' },
+  epico: { label: 'Épico', color: 'text-red-400' },
+};
+
+export const BOSS_PERIODO: Record<string, string> = {
+  semanal: 'Semanal', mensal: 'Mensal', unico: 'Único',
+};
 
 export const PET_STAGES = [
   { icon: '🥚', name: 'Ovo', desc: 'Choca com missões diárias!' },

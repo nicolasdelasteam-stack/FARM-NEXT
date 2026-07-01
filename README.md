@@ -34,6 +34,8 @@ npm run dev
 
 ## Melhorias recentes
 - 💰 **Finanças** (`/financas`) — agora **persiste** no estado global (antes os dados sumiam ao recarregar) e ganhou aba **Metas**: crie um objetivo (ex.: fone novo) com valor-alvo, ícone e prioridade (urgente / algum dia / pode esperar), acompanhe uma barra de progresso e registre quanto já juntou.
+- ⚔️ **Boss Fight** (`/boss`) — chefes semanais/mensais da vida real com lore, dificuldade, requisito, como vencer, penalidade, condição de aparição e recompensa (moedas + XP). Ao **Derrotar**, o boss concede a recompensa e vai para o **Bestiário** (que só mostra os já vencidos). Vem com 4 bosses de exemplo.
+- 🧠 **Segundo Cérebro** (`/segundo-cerebro`) — **Livros** de leitura livre (status quero ler / lendo / lido + barra de progresso e link do PDF), **Habilidades** em estudo (uma "página" de anotações por habilidade) e banco de **Ideias** por categoria. *Os livros ligados a matérias continuam em Estudos → Bibliotheca.*
 
 ## Arquitetura
 ```

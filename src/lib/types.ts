@@ -176,3 +176,32 @@ export interface EstudosState { materias: Materia[]; biblioteca: Livro[]; }
 export interface Transacao { id: string; desc: string; valor: number; tipo: 'receita' | 'despesa'; data: string; }
 export interface MetaFinanceira { id: string; nome: string; icon: string; alvo: number; guardado: number; prioridade: Prioridade; }
 export interface FinancasState { transacoes: Transacao[]; metas: MetaFinanceira[]; }
+
+// ─── FARM-NEXT extras (Boss Fight) ───
+export type BossDificuldade = 'facil' | 'media' | 'dificil' | 'epico';
+export type BossPeriodo = 'semanal' | 'mensal' | 'unico';
+export interface Boss {
+  id: string;
+  nome: string;
+  icon: string;
+  lore: string;
+  dificuldade: BossDificuldade;
+  periodo: BossPeriodo;
+  comoVencer: string;
+  requisito: string;
+  penalidade: string;
+  recompensa: string;
+  recompensaCoins: number;
+  recompensaXp: number;
+  condicao: string;
+  derrotado: boolean;
+  data: string | null;
+}
+export interface BossState { bosses: Boss[]; }
+
+// ─── FARM-NEXT extras (Segundo Cérebro) ───
+// Livros de leitura livre / que "fortalecem o cérebro" (os livros de matéria ficam em Estudos → Bibliotheca).
+export interface LivroCerebro { id: string; titulo: string; autor: string; link: string; status: LivroStatus; progresso: number; }
+export interface Habilidade { id: string; nome: string; icon: string; notas: string; }
+export interface Ideia { id: string; texto: string; categoria: string; }
+export interface CerebroState { livros: LivroCerebro[]; habilidades: Habilidade[]; ideias: Ideia[]; }

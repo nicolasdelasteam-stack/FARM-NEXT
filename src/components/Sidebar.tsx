@@ -18,6 +18,7 @@ const NAV_ITEMS = [
     { href: '/conquistas', icon: '🏆', label: 'Conquistas' },
     { href: '/hall', icon: '🏛️', label: 'Hall' },
     { href: '/eventos', icon: '🎉', label: 'Eventos' },
+    { href: '/boss', icon: '⚔️', label: 'Boss Fight' },
   ]},
   { label: 'Vida', items: [
     { href: '/agua', icon: '💧', label: 'Água' },
@@ -32,6 +33,7 @@ const NAV_ITEMS = [
   ]},
   { label: 'Mente', items: [
     { href: '/estudos', icon: '📚', label: 'Estudos' },
+    { href: '/segundo-cerebro', icon: '🧠', label: 'Segundo Cérebro' },
     { href: '/notas', icon: '📝', label: 'Notas' },
     { href: '/midia', icon: '🎬', label: 'Mídia' },
     { href: '/deepwork', icon: '🌑', label: 'Deep Work' },
