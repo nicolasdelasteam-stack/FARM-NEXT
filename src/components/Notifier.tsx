@@ -3,10 +3,28 @@
 import { useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { canNotify, sendNotification } from '@/lib/notify';
+import { applyDailyReset, today } from '@/lib/engine';
 
 export default function Notifier() {
   const settings = useStore((s) => s.settings);
   const eventos = useStore((s) => s.eventos);
+
+  // Reset diário (ofensiva, XP do dia, missões diárias) — roda no mount e a cada minuto,
+  // lendo o estado fresco via getState() para não recriar o efeito nem entrar em loop.
+  useEffect(() => {
+    const check = () => {
+      const s = useStore.getState();
+      const res = applyDailyReset(s.player, s.missions, s.lastDailyReset, s.settings);
+      if (res.changed) {
+        s.setPlayer(res.player);
+        s.setMissions(res.missions);
+        s.setLastDailyReset(today());
+      }
+    };
+    check();
+    const id = setInterval(check, 60000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     if (!canNotify()) return;

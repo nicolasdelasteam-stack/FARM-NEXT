@@ -188,6 +188,33 @@ export function applyFailDamage(missions: Mission[], settings: { hardcoreFail?: 
   return hpLost;
 }
 
+// Reset diário: zera XP do dia, aplica continuidade da ofensiva, dano por missões
+// falhadas (hardcore) e reabre missões diárias/hábitos. Roda 1x quando o dia vira.
+export function applyDailyReset(
+  player: Player,
+  missions: Mission[],
+  lastReset: string | null,
+  settings: { hardcoreFail?: boolean; hardcoreHp?: boolean; gentleMode?: boolean },
+): { player: Player; missions: Mission[]; changed: boolean } {
+  const t = today();
+  if (lastReset === t) return { player, missions, changed: false };
+
+  let p = { ...player };
+  const hpLost = applyFailDamage(missions, settings);
+  if (hpLost > 0) p = damageHp(p, hpLost, settings);
+  p = checkStreakContinuity(p, lastReset);
+  p.dailyXp = 0;
+  p.metaBatidaHoje = false;
+
+  const nextMissions = missions.map((m) =>
+    m.type === 'daily' || m.type === 'habit'
+      ? { ...m, done: false, completedAt: null, date: t }
+      : m,
+  );
+
+  return { player: p, missions: nextMissions, changed: true };
+}
+
 // ─── Loot box ───
 export function rollLootBox(): string | null {
   if (Math.random() >= 0.25) return null;
@@ -350,4 +377,37 @@ export function completeMission(mission: Mission): Mission {
     done: true,
     completedAt: new Date().toISOString(),
   };
+}
+
+// Fluxo completo ao concluir uma missão: funde XP, moedas, atributo, contadores,
+// ofensiva/pet e o boss automático num só lugar (antes tudo isso ficava desligado).
+export function applyMissionComplete(
+  player: Player,
+  mission: Mission,
+  settings: { maxDailyXp: number; dailyXpGoal: number },
+): { player: Player; leveledUp: boolean; bossDefeated: boolean } {
+  const beforeLevel = player.level;
+  const skill = typeof mission.skill === 'string' ? mission.skill : undefined;
+
+  let p = addXP(player, mission.reward.xp, settings, skill);
+  p = addCoins(p, mission.reward.coins);
+  if (skill) p = incrementAtributo(p, skill);
+  p.totalMissionsDone = (p.totalMissionsDone || 0) + 1;
+  if (mission.type === 'habit') p.totalHabitsDone = (p.totalHabitsDone || 0) + 1;
+
+  // Ofensiva: ao bater a meta diária de XP, conta como dia ativo e evolui o pet.
+  if (!p.metaBatidaHoje && (p.dailyXp || 0) >= (settings.dailyXpGoal || 100)) {
+    p.metaBatidaHoje = true;
+    p.streak = (p.streak || 0) + 1;
+    if (p.streak > (p.bestStreak || 0)) p.bestStreak = p.streak;
+    p = updatePet(p).player;
+  }
+
+  // Boss automático: invoca um se não houver e causa dano igual ao XP ganho.
+  if (!p.bossActive) p = spawnBoss(p);
+  const dmg = bossDamage(p, mission.reward.xp);
+  p = dmg.player;
+  if (dmg.defeated) p = addCoins(p, 50); // bônus por derrotar o chefe
+
+  return { player: p, leveledUp: p.level > beforeLevel, bossDefeated: dmg.defeated };
 }

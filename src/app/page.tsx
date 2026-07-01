@@ -2,11 +2,19 @@
 
 import { useStore } from '@/lib/store';
 import { PET_STAGES } from '@/lib/constants';
+import { revivePlayer } from '@/lib/engine';
 
 export default function DashboardPage() {
   const player = useStore((s) => s.player);
   const missions = useStore((s) => s.missions);
   const settings = useStore((s) => s.settings);
+  const setPlayer = useStore((s) => s.setPlayer);
+
+  const reviveCost = 30 + (player.deaths || 0) * 10;
+  const revive = () => {
+    const p = revivePlayer(player);
+    if (p) setPlayer(p);
+  };
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const pending = missions.filter((m) => !m.done && m.date === todayStr).length;
@@ -26,8 +34,15 @@ export default function DashboardPage() {
           <p className="text-zinc-500 text-sm mb-6">Mortes: {player.deaths} · Streak: {player.streak}</p>
           <div className="inline-block p-6 rounded-xl bg-zinc-900 border border-zinc-800 text-center">
             <div className="text-3xl mb-2">🪙</div>
-            <div className="font-bold text-lg mb-1">Reviver com {30 + (player.deaths || 0) * 10} moedas</div>
+            <div className="font-bold text-lg mb-1">Reviver com {reviveCost} moedas</div>
             <p className="text-zinc-500 text-sm mb-4">Você revive com 50% do HP max.</p>
+            <button
+              onClick={revive}
+              disabled={player.coins < reviveCost}
+              className="px-6 py-2 rounded-lg font-bold text-sm bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {player.coins < reviveCost ? 'Moedas insuficientes' : 'Reviver'}
+            </button>
             <p className="mt-3 text-sm text-zinc-500">Moedas: {player.coins}</p>
           </div>
         </div>
