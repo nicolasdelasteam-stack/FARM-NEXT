@@ -140,7 +140,7 @@ export interface EventosState { eventos: Evento[]; inventario: ItemInventario[];
 
 export type TrofeuTipo = 'conquista' | 'titulo' | 'trofeu' | 'medalha';
 export type TrofeuStatus = 'bloqueado' | 'disponivel' | 'resgatado';
-export interface Trofeu { id: string; nome: string; icon: string; descricao: string; tipo: TrofeuTipo; requisito: string; recompensaCoins: number; recompensaXp: number; status: TrofeuStatus; data: string | null; }
+export interface Trofeu { id: string; nome: string; icon: string; descricao: string; tipo: TrofeuTipo; requisito: string; missaoId?: string; liberado?: boolean; recompensaCoins: number; recompensaXp: number; status: TrofeuStatus; data: string | null; }
 
 export type CompanionTipo = 'amigo' | 'pet' | 'parceiro' | 'familia';
 export interface Companion { id: string; nome: string; tipo: CompanionTipo; emoji: string; aniversario: string; dataJuntos: string; notas: string; }

@@ -8,6 +8,7 @@ import type { Trofeu } from '@/lib/types';
 export default function HallPage() {
   const hall = useStore((s) => s.hall);
   const setHall = useStore((s) => s.setHall);
+  const missions = useStore((s) => s.missions);
   const player = useStore((s) => s.player);
   const setPlayer = useStore((s) => s.setPlayer);
   const settings = useStore((s) => s.settings);
@@ -17,25 +18,36 @@ export default function HallPage() {
   const [desc, setDesc] = useState('');
   const [tipo, setTipo] = useState<Trofeu['tipo']>('trofeu');
   const [req, setReq] = useState('');
+  const [missaoId, setMissaoId] = useState('');
   const [coins, setCoins] = useState('50');
   const [xp, setXp] = useState('100');
 
   const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500';
   const TIPO_LABEL: Record<string, string> = { conquista: 'Conquista', titulo: 'Título', trofeu: 'Troféu', medalha: 'Medalha' };
 
+  // Um troféu só pode ser resgatado se o requisito estiver cumprido:
+  // via missão vinculada concluída, ou marcação manual (quando há requisito em texto).
+  const missaoDe = (h: Trofeu) => h.missaoId ? missions.find((m) => m.id === h.missaoId) : undefined;
+  const podeResgatar = (h: Trofeu) => {
+    if (h.missaoId) return !!missaoDe(h)?.done;
+    if (h.requisito) return !!h.liberado;
+    return true;
+  };
+
   const resgatar = (id: string) => {
     const tr = hall.find((h) => h.id === id);
-    if (!tr || tr.status === 'resgatado') return;
+    if (!tr || tr.status === 'resgatado' || !podeResgatar(tr)) return;
     let p = player;
     if (tr.recompensaCoins > 0) p = addCoins(p, tr.recompensaCoins);
     if (tr.recompensaXp > 0) p = addXP(p, tr.recompensaXp, settings);
     setPlayer(p);
     setHall(hall.map((h) => h.id === id ? { ...h, status: 'resgatado', data: today() } : h));
   };
+  const marcarCumprido = (id: string) => setHall(hall.map((h) => h.id === id ? { ...h, liberado: true } : h));
   const addTrofeu = () => {
     if (!nome.trim()) return;
-    setHall([...hall, { id: uid(), nome: nome.trim(), icon, descricao: desc.trim(), tipo, requisito: req.trim(), recompensaCoins: parseInt(coins) || 0, recompensaXp: parseInt(xp) || 0, status: 'disponivel', data: null }]);
-    setNome(''); setDesc(''); setReq(''); setOpen(false);
+    setHall([...hall, { id: uid(), nome: nome.trim(), icon, descricao: desc.trim(), tipo, requisito: req.trim(), missaoId: missaoId || undefined, recompensaCoins: parseInt(coins) || 0, recompensaXp: parseInt(xp) || 0, status: 'disponivel', data: null }]);
+    setNome(''); setDesc(''); setReq(''); setMissaoId(''); setOpen(false);
   };
   const del = (id: string) => setHall(hall.filter((h) => h.id !== id));
 
@@ -61,8 +73,12 @@ export default function HallPage() {
             <select className={inp} value={tipo} onChange={(e) => setTipo(e.target.value as Trofeu['tipo'])}>
               {Object.entries(TIPO_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
-            <input className={inp} placeholder="Requisito" value={req} onChange={(e) => setReq(e.target.value)} />
+            <input className={inp} placeholder="Requisito (texto)" value={req} onChange={(e) => setReq(e.target.value)} />
           </div>
+          <select className={inp} value={missaoId} onChange={(e) => setMissaoId(e.target.value)}>
+            <option value="">Sem missão vinculada (marco manualmente quando cumprir)</option>
+            {missions.map((m) => <option key={m.id} value={m.id}>🔗 {m.title}{m.done ? ' ✓' : ''}</option>)}
+          </select>
           <div className="grid grid-cols-2 gap-2">
             <input className={inp} type="number" placeholder="Moedas" value={coins} onChange={(e) => setCoins(e.target.value)} />
             <input className={inp} type="number" placeholder="XP" value={xp} onChange={(e) => setXp(e.target.value)} />
@@ -86,13 +102,18 @@ export default function HallPage() {
                   <div className="text-[10px] uppercase tracking-wide text-violet-400">{TIPO_LABEL[h.tipo]}</div>
                   {h.descricao && <p className="text-xs text-zinc-500 mt-1">{h.descricao}</p>}
                   {h.requisito && <p className="text-[11px] text-zinc-600 mt-1">📌 {h.requisito}</p>}
+                  {h.missaoId && <p className="text-[11px] text-zinc-600 mt-0.5">🔗 Missão: {missaoDe(h)?.title || '(removida)'} {missaoDe(h)?.done ? '✓' : '(em aberto)'}</p>}
                 </div>
               </div>
-              <div className="flex justify-between items-center mt-3">
+              <div className="flex justify-between items-center mt-3 gap-2">
                 <span className="text-xs text-yellow-400">{h.recompensaCoins ? `🪙 ${h.recompensaCoins}` : ''}{h.recompensaXp ? ` ⭐ ${h.recompensaXp} XP` : ''}</span>
                 {done
                   ? <span className="text-xs text-emerald-400 font-semibold">✓ {h.data ? new Date(h.data).toLocaleDateString('pt-BR') : 'Resgatado'}</span>
-                  : <button onClick={() => resgatar(h.id)} className="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-black rounded-lg text-xs font-bold">Resgatar</button>}
+                  : podeResgatar(h)
+                    ? <button onClick={() => resgatar(h.id)} className="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-black rounded-lg text-xs font-bold">Resgatar</button>
+                    : h.missaoId
+                      ? <span className="text-[11px] text-zinc-500">🔒 Conclua a missão vinculada</span>
+                      : <button onClick={() => marcarCumprido(h.id)} className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-[11px] text-zinc-300">🔒 Marcar requisito cumprido</button>}
               </div>
             </div>
           );

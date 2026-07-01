@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { spendCoins, healHp, addCoins, openLootBox, getWeekStart, nowMs } from '@/lib/engine';
+import { spendCoins, healHp, addCoins, openLootBox, getWeekStart, nowMs, uid } from '@/lib/engine';
 
 export default function MercadoPage() {
   const player = useStore((s) => s.player);
@@ -10,6 +10,13 @@ export default function MercadoPage() {
   const market = useStore((s) => s.market);
   const setMarket = useStore((s) => s.setMarket);
   const [msg, setMsg] = useState('');
+  const [open, setOpen] = useState(false);
+  const [rEmoji, setREmoji] = useState('🎁');
+  const [rNome, setRNome] = useState('');
+  const [rDesc, setRDesc] = useState('');
+  const [rCost, setRCost] = useState('30');
+  const [rLimit, setRLimit] = useState('0');
+  const EMOJIS = ['🎁', '🍔', '🍫', '🎮', '📺', '🌴', '🛌', '☕', '🍕', '🍺', '🛍️', '🎧', '🎬', '💆', '🏖️', '🚗'];
 
   const items = market?.items || [];
   const rewards = market?.rewards || [];
@@ -46,6 +53,15 @@ export default function MercadoPage() {
     flash(`${rw.name} resgatado! 🎉`);
   };
 
+  const addReward = () => {
+    if (!rNome.trim()) return;
+    const novo = { id: 'r_' + uid(), name: `${rEmoji} ${rNome.trim()}`, desc: rDesc.trim(), cost: parseInt(rCost) || 0, weeklyLimit: parseInt(rLimit) || 0 };
+    setMarket({ ...market, rewards: [...rewards, novo] });
+    setRNome(''); setRDesc(''); setRCost('30'); setRLimit('0'); setOpen(false);
+    flash('Produto adicionado! 🎉');
+  };
+  const delReward = (id: string) => setMarket({ ...market, rewards: rewards.filter((r: { id: string }) => r.id !== id) });
+
   return (
     <div className="max-w-3xl">
       <div className="flex justify-between items-center mb-4">
@@ -74,7 +90,26 @@ export default function MercadoPage() {
         })}
       </div>
 
-      <h2 className="text-sm font-bold text-zinc-400 mb-2">🎁 Recompensas da vida real</h2>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-sm font-bold text-zinc-400">🎁 Recompensas da vida real</h2>
+        <button onClick={() => setOpen(!open)} className="px-2.5 py-1 bg-violet-600 hover:bg-violet-500 rounded-lg text-xs font-semibold">{open ? 'Fechar' : '+ Produto'}</button>
+      </div>
+
+      {open && (
+        <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 mb-4">
+          <div className="flex gap-1.5 flex-wrap">
+            {EMOJIS.map((e) => <button key={e} onClick={() => setREmoji(e)} className={`w-9 h-9 rounded-lg text-lg ${rEmoji === e ? 'bg-violet-600' : 'bg-zinc-800'}`}>{e}</button>)}
+          </div>
+          <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500" placeholder="Nome (ex: Sorvete)" value={rNome} onChange={(e) => setRNome(e.target.value)} />
+          <input className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500" placeholder="Descrição (opcional)" value={rDesc} onChange={(e) => setRDesc(e.target.value)} />
+          <div className="grid grid-cols-2 gap-2">
+            <label className="text-[11px] text-zinc-500 flex flex-col">Custo (moedas)<input className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500" type="number" value={rCost} onChange={(e) => setRCost(e.target.value)} /></label>
+            <label className="text-[11px] text-zinc-500 flex flex-col">Limite semanal (0 = sem limite)<input className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-violet-500" type="number" value={rLimit} onChange={(e) => setRLimit(e.target.value)} /></label>
+          </div>
+          <button onClick={addReward} className="w-full py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-semibold">Adicionar produto</button>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         {rewards.map((rw: { id: string; name: string; desc: string; cost: number; weeklyLimit: number }) => {
           const used = buys[rw.id] || 0;
@@ -83,7 +118,10 @@ export default function MercadoPage() {
           const canBuy = player.coins >= rw.cost && !esgotado;
           return (
             <div key={rw.id} className={`p-4 rounded-xl border ${canBuy ? 'bg-zinc-900 border-zinc-800 hover:border-yellow-800/50' : 'bg-zinc-900/50 border-zinc-800/30 opacity-60'}`}>
-              <div className="font-semibold text-sm mb-1">{rw.name}</div>
+              <div className="flex justify-between items-start gap-2">
+                <div className="font-semibold text-sm mb-1">{rw.name}</div>
+                <button onClick={() => delReward(rw.id)} className="text-zinc-700 hover:text-red-400 text-xs shrink-0" title="Remover produto">✕</button>
+              </div>
               <p className="text-xs text-zinc-500 mb-1">{rw.desc}</p>
               <p className="text-[11px] text-zinc-600 mb-3">{limited ? `${Math.max(0, rw.weeklyLimit - used)}/${rw.weeklyLimit} restantes esta semana` : 'Sem limite'}</p>
               <div className="flex justify-between items-center">
