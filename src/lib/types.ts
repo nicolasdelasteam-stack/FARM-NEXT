@@ -194,8 +194,11 @@ export interface Boss {
   recompensa: string;
   recompensaCoins: number;
   recompensaXp: number;
+  recompensaEfeito?: string;
   condicao: string;
+  prazo?: string;
   derrotado: boolean;
+  penalizado?: boolean;
   data: string | null;
 }
 export interface BossState { bosses: Boss[]; }

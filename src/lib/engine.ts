@@ -45,10 +45,32 @@ export function bossShouldReset(boss: Boss): boolean {
 export function refreshBosses(bosses: Boss[]): { bosses: Boss[]; changed: boolean } {
   let changed = false;
   const next = bosses.map((b) => {
-    if (bossShouldReset(b)) { changed = true; return { ...b, derrotado: false, data: null }; }
+    if (bossShouldReset(b)) { changed = true; return { ...b, derrotado: false, penalizado: false, data: null }; }
     return b;
   });
   return { bosses: next, changed };
+}
+
+// Aplica a penalidade (−15 HP) de bosses com prazo vencido que não foram derrotados.
+export function applyBossPenalties(
+  player: Player,
+  bosses: Boss[],
+  settings: { gentleMode?: boolean; hardcoreHp?: boolean },
+): { player: Player; bosses: Boss[]; changed: boolean; penalized: string[] } {
+  const t = today();
+  let p = player;
+  let changed = false;
+  const penalized: string[] = [];
+  const next = bosses.map((b) => {
+    if (!b.derrotado && !b.penalizado && b.prazo && t > b.prazo) {
+      p = damageHp(p, 15, settings);
+      changed = true;
+      penalized.push(b.nome);
+      return { ...b, penalizado: true };
+    }
+    return b;
+  });
+  return { player: p, bosses: next, changed, penalized };
 }
 
 // Chamadas impuras isoladas na lib (fora de componentes) — evitam o erro react-hooks/purity.
