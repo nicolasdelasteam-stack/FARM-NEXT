@@ -53,6 +53,7 @@ export interface AppState {
   cerebro: CerebroState;
   notas: Nota[];
   midia: MidiaItem[];
+  achievements: string[];
 
   // UI
   route: string;
@@ -87,6 +88,7 @@ export interface AppState {
   setCerebro: (cerebro: CerebroState) => void;
   setNotas: (notas: Nota[]) => void;
   setMidia: (midia: MidiaItem[]) => void;
+  setAchievements: (achievements: string[]) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -116,6 +118,7 @@ export const useStore = create<AppState>()(
       cerebro: D.cerebro(),
       notas: D.notas(),
       midia: D.midia(),
+      achievements: [],
 
       route: 'dashboard',
       view: 'dashboard',
@@ -148,10 +151,11 @@ export const useStore = create<AppState>()(
       setCerebro: (cerebro) => set({ cerebro }),
       setNotas: (notas) => set({ notas }),
       setMidia: (midia) => set({ midia }),
+      setAchievements: (achievements) => set({ achievements }),
     }),
     {
       name: 'zenite-storage',
-      version: 6,
+      version: 7,
       migrate: (persisted: unknown) => {
         const p = (persisted || {}) as Record<string, unknown>;
         return {
@@ -172,6 +176,7 @@ export const useStore = create<AppState>()(
           cerebro: p.cerebro || D.cerebro(),
           notas: p.notas || D.notas(),
           midia: p.midia || D.midia(),
+          achievements: p.achievements || [],
           market: { ...INITIAL_MARKET, ...((p.market as object) || {}) },
         } as AppState;
       },
