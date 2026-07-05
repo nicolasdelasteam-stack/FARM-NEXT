@@ -119,11 +119,12 @@ export default function Celebration() {
   }, []);
 
   // Confete (compartilhado por popup e boss) — dura mais na celebração de boss.
+  // A tela de boss NÃO fecha sozinha: só sai no clique do usuário (fechar/backdrop).
   useEffect(() => {
     if (!popup && !bossCele) return;
     const isBoss = !!bossCele;
     const dur = isBoss ? 4200 : 2600;
-    const timer = setTimeout(() => { setPopup(null); setBossCele(null); }, dur);
+    const timer = isBoss ? null : setTimeout(() => setPopup(null), dur);
 
     const canvas = canvasRef.current;
     let raf = 0;
@@ -160,7 +161,7 @@ export default function Celebration() {
       };
       raf = requestAnimationFrame(frame);
     }
-    return () => { clearTimeout(timer); cancelAnimationFrame(raf); };
+    return () => { if (timer) clearTimeout(timer); cancelAnimationFrame(raf); };
   }, [popup, bossCele]);
 
   if (!popup && !bossCele) return null;
