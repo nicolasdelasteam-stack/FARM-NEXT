@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { SKILL_NAMES, PET_STAGES } from '@/lib/constants';
+import { SKILL_NAMES, PET_STAGES, PET_SPECIES, PET_HUMOR, PET_STREAK_REQ } from '@/lib/constants';
+import { getPetIcon, petCarinho, petPetisco, today } from '@/lib/engine';
+import { play } from '@/lib/sound';
 
 const AVATARS = ['🦊', '🐉', '🦅', '🐺', '🦁', '🐱', '🐲', '🦄', '🐸', '🧙', '🦸', '🥷', '👤', '😎', '💀', '👑'];
 
@@ -21,6 +23,8 @@ export default function PersonagemPage() {
   const hpPct = Math.round((player.hp / player.maxHp) * 100);
 
   const [edit, setEdit] = useState(false);
+  const [petMsg, setPetMsg] = useState('');
+  const flashPet = (m: string) => { setPetMsg(m); setTimeout(() => setPetMsg(''), 3000); };
   const [dNome, setDNome] = useState(player.name);
   const [dAvatar, setDAvatar] = useState(player.avatar);
   const [dPhoto, setDPhoto] = useState<string | undefined>(player.photo);
@@ -158,20 +162,82 @@ export default function PersonagemPage() {
         </div>
       )}
 
-      {/* Pet */}
+      {/* Mascote — companheiro que evolui com a ofensiva e vive do seu cuidado */}
       <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
-        <h3 className="font-bold text-sm mb-2">🐾 Mascote</h3>
-        <div className="flex items-center gap-4">
-          <span className="text-5xl">{PET_STAGES[player.pet?.stage || 0]?.icon || '🥚'}</span>
-          <div>
-            <div className="font-semibold">{PET_STAGES[player.pet?.stage || 0]?.name || 'Ovo'}</div>
-            <p className="text-xs text-zinc-500">{PET_STAGES[player.pet?.stage || 0]?.desc || ''}</p>
-            <div className="flex gap-2 mt-1">
-              <span className="text-xs px-1.5 py-0.5 rounded bg-zinc-800">XP: {player.pet?.xp || 0}</span>
-              <span className="text-xs px-1.5 py-0.5 rounded bg-zinc-800">Evoluções: {player.pet?.evolutions || 0}</span>
+        {(() => {
+          const pet = player.pet || { name: '', stage: 0, xp: 0, evolutions: 0 };
+          const stage = pet.stage || 0;
+          const humor = pet.humor ?? 70;
+          const faixa = PET_HUMOR.find((h) => humor >= h.min) || PET_HUMOR[PET_HUMOR.length - 1];
+          const proxReq = PET_STREAK_REQ[stage + 1];
+          const jaCarinho = pet.lastCarinho === today();
+          const setPet = (patch: Partial<typeof pet>) => setPlayer({ ...player, pet: { ...pet, ...patch } });
+          const carinho = () => {
+            const r = petCarinho(player);
+            if (!r) { flashPet('Ele já ganhou carinho hoje — volte amanhã! 🤗'); return; }
+            play('coin'); setPlayer(r.player); flashPet(r.msg);
+          };
+          const petisco = () => {
+            const r = petPetisco(player);
+            if (!r) { play('error'); flashPet('Moedas insuficientes (custa 10 🪙).'); return; }
+            play('ding'); setPlayer(r.player); flashPet(r.msg);
+          };
+          return (
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-bold text-sm">🐾 Mascote</h3>
+                <span className="text-xs text-zinc-500">{faixa.icon} {faixa.label}{humor >= 80 ? ' · +10% XP!' : ''}</span>
+              </div>
+              {petMsg && <div className="mb-2 p-2 rounded-lg bg-indigo-950/50 border border-indigo-800/50 text-xs text-indigo-200 text-center">{petMsg}</div>}
+              <div className="flex items-center gap-4">
+                <span className={`text-6xl transition-transform ${humor >= 80 ? 'animate-bounce' : ''}`} style={{ filter: humor < 30 ? 'grayscale(0.7)' : 'none' }}>
+                  {getPetIcon(pet)}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <input
+                    className="bg-transparent font-semibold text-sm outline-none border-b border-transparent focus:border-indigo-500 w-full"
+                    placeholder={`${PET_STAGES[stage]?.name || 'Ovo'} sem nome — dê um nome!`}
+                    value={pet.name}
+                    onChange={(e) => setPet({ name: e.target.value })}
+                  />
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    {PET_STAGES[stage]?.name}{proxReq ? ` · evolui com ofensiva de ${proxReq} dias (você: ${Math.max(player.streak || 0, player.bestStreak || 0)})` : ' · forma final! 🏆'}
+                  </p>
+                  {/* Humor */}
+                  <div className="mt-2">
+                    <div className="flex justify-between text-[10px] text-zinc-500 mb-0.5"><span>Humor</span><span>{humor}/100</span></div>
+                    <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                      <div className={`h-full rounded-full transition-all ${humor >= 80 ? 'bg-pink-400' : humor >= 55 ? 'bg-emerald-500' : humor >= 30 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${humor}%` }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Espécie */}
+              <div className="flex gap-1.5 flex-wrap mt-3">
+                {PET_SPECIES.map((sp) => (
+                  <button key={sp.id} onClick={() => setPet({ especie: sp.id })} title={sp.nome}
+                    className={`px-2 py-1 rounded-lg text-xs ${(pet.especie || 'fenix') === sp.id ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}>
+                    {sp.stages[4]} {sp.nome}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-3">
+                <button onClick={carinho} disabled={jaCarinho}
+                  className={`flex-1 py-2 rounded-lg text-sm font-semibold ${jaCarinho ? 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'}`}>
+                  🤗 {jaCarinho ? 'Carinho feito hoje ✓' : 'Fazer carinho (1x/dia)'}
+                </button>
+                <button onClick={petisco} className="flex-1 py-2 rounded-lg text-sm font-semibold bg-zinc-800 hover:bg-emerald-600">
+                  🍖 Petisco (10 🪙)
+                </button>
+              </div>
+              <div className="flex gap-2 mt-2">
+                <span className="text-xs px-1.5 py-0.5 rounded bg-zinc-800">XP: {pet.xp || 0}</span>
+                <span className="text-xs px-1.5 py-0.5 rounded bg-zinc-800">Evoluções: {pet.evolutions || 0}</span>
+                <span className="text-[11px] text-zinc-600 ml-auto">O humor cai a cada dia — cuide dele! Radiante = +10% XP</span>
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })()}
       </div>
 
       {/* Atributos */}

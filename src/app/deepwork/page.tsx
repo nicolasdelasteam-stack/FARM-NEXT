@@ -14,6 +14,7 @@ export default function DeepWorkPage() {
   const [active, setActive] = useState<Record<string, boolean>>({});
   const [erro, setErro] = useState<Record<string, boolean>>({});
   const [vol, setVol] = useState<Record<string, number>>(() => Object.fromEntries(AMBIENT_TRACKS.map((s) => [s.id, 0.6])));
+  const [cafeteria, setCafeteria] = useState(false);
   const [mtexto, setMtexto] = useState('');
   const [mimg, setMimg] = useState('');
 
@@ -76,8 +77,18 @@ export default function DeepWorkPage() {
             ))}
           </div>
           <p className="text-[11px] text-zinc-600 mt-2">Gravações reais em loop (Wikimedia Commons). Misture e ajuste o volume de cada uma.</p>
+          <button onClick={() => setCafeteria(!cafeteria)} className={`mt-3 w-full py-2 rounded-lg text-sm font-semibold ${cafeteria ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}`}>
+            ☕ {cafeteria ? 'Fechar Cafeteria Virtual' : 'Abrir Cafeteria Virtual (Flocus)'}
+          </button>
         </div>
       </div>
+
+      {cafeteria && (
+        <div className="mt-4 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900">
+          {/* O mesmo widget embutido no Notion (Deep Work → flocus.com/virtual-cafe) */}
+          <iframe src="https://flocus.com/virtual-cafe/" title="Cafeteria Virtual — Flocus" className="w-full h-96 border-0" allow="autoplay" />
+        </div>
+      )}
 
       <div className="mt-4 p-4 rounded-xl bg-zinc-900 border border-zinc-800">
         <div className="text-sm font-bold mb-3">🎯 Visualização — seus objetivos</div>

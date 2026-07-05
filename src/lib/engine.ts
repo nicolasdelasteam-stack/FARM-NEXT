@@ -1,5 +1,5 @@
-import type { Player, Difficulty, Mission, Reward, Boss, Agua, Trofeu, EventosState } from './types';
-import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, PET_STREAK_REQ, DEFAULT_EVENT_POOL } from './constants';
+import type { Player, Difficulty, Mission, Reward, Boss, Agua, Trofeu, EventosState, Pet } from './types';
+import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, PET_STREAK_REQ, PET_SPECIES, RANDOM_EVENT_POOL, SEASONAL_EVENTS, type EventoTemplate } from './constants';
 
 // ─── Date helpers ───
 export function today(): string {
@@ -112,7 +112,9 @@ export function calcReward(difficulty: Difficulty): Reward {
 export function addXP(player: Player, amount: number, settings: { maxDailyXp: number; dailyXpGoal: number }, skillType?: string): Player {
   const p = { ...player };
   // Dobro de XP enquanto o boost estiver ativo (item da loja / recompensa de evento).
-  const boosted = (player.xpBoostUntil && player.xpBoostUntil > Date.now()) ? amount * 2 : amount;
+  let boosted = (player.xpBoostUntil && player.xpBoostUntil > Date.now()) ? amount * 2 : amount;
+  // Mascote radiante (humor ≥ 80) dá +10% de XP em tudo.
+  if ((player.pet?.humor ?? 0) >= 80) boosted = Math.round(boosted * 1.1);
   // Daily XP cap
   const cap = settings.maxDailyXp || 500;
   const effective = Math.min(boosted, Math.max(0, cap - (p.dailyXp || 0)));
@@ -167,11 +169,34 @@ export function applyItemEffect(player: Player, efeito: string | undefined): { p
   let p = { ...player };
   switch (efeito) {
     case 'xp2x': p = { ...p, xpBoostUntil: Date.now() + 2 * 3600 * 1000 }; return { player: p, msg: 'Dobro de XP ativado por 2h ⚡' };
+    case 'xp2x_24h': p = { ...p, xpBoostUntil: Date.now() + 24 * 3600 * 1000 }; return { player: p, msg: 'Bônus Ultra: dobro de XP por 24h 🌟' };
     case 'heal_full': p = healHp(p, p.maxHp); return { player: p, msg: 'HP totalmente restaurado ❤️' };
     case 'heal_30': p = healHp(p, 30); return { player: p, msg: '+30 HP 🧪' };
     case 'coins_50': p = addCoins(p, 50); return { player: p, msg: '+50 moedas 🪙' };
     case 'coins_100': p = addCoins(p, 100); return { player: p, msg: '+100 moedas 🪙' };
     case 'freeze': p = { ...p, streakFreeze: (p.streakFreeze || 0) + 1 }; return { player: p, msg: 'Ofensiva protegida ❄️' };
+    case 'bau_sombrio': {
+      // Sorte ou azar: 70% tesouro bom, 30% consolo pequeno.
+      if (Math.random() < 0.7) { const v = 60 + Math.floor(Math.random() * 90); p = addCoins(p, v); return { player: p, msg: `O baú range... +${v} moedas! 🖤` }; }
+      p = healHp(addCoins(p, 10), 10); return { player: p, msg: 'O baú estava quase vazio: +10 moedas, +10 HP 🕸️' };
+    }
+    case 'roleta': {
+      const premios: [string, (pl: Player) => Player][] = [
+        ['+80 moedas 🪙', (pl) => addCoins(pl, 80)],
+        ['+40 HP 🧪', (pl) => healHp(pl, 40)],
+        ['Ofensiva protegida ❄️', (pl) => ({ ...pl, streakFreeze: (pl.streakFreeze || 0) + 1 })],
+        ['Dobro de XP por 2h ⚡', (pl) => ({ ...pl, xpBoostUntil: Date.now() + 2 * 3600 * 1000 })],
+      ];
+      const [msg, fn] = premios[Math.floor(Math.random() * premios.length)];
+      return { player: fn(p), msg: `🎡 A roda girou: ${msg}` };
+    }
+    case 'golpe_boss': {
+      if (!p.bossActive) return { player: p, msg: 'Nenhum boss ativo — guarde o golpe para a próxima batalha ⚔️' };
+      const dmg = bossDamage(p, 150);
+      p = dmg.player;
+      if (dmg.defeated) { p = addCoins(p, 50); return { player: p, msg: '⚔️ GOLPE FATAL! Boss derrotado (+50 🪙)' }; }
+      return { player: p, msg: '⚔️ Golpe devastador: -150 de HP no boss!' };
+    }
     default: return { player: p, msg: 'Item usado ✓' };
   }
 }
@@ -248,6 +273,8 @@ export function applyDailyReset(
   p = checkStreakContinuity(p, lastReset);
   p.dailyXp = 0;
   p.metaBatidaHoje = false;
+  // O humor do mascote cai um pouco a cada dia — carinho/petisco/meta batida recuperam.
+  if (p.pet) p.pet = { ...p.pet, humor: Math.max(0, (p.pet.humor ?? 70) - 12) };
 
   // Missões únicas concluídas saem do Campo e vão para o histórico (Configurações).
   const history = missions.filter((m) => m.done && m.type === 'mission');
@@ -294,22 +321,67 @@ export function checkHallUnlocks(
   return { hall: next, changed, novos };
 }
 
-// Evento automático da semana: escolhe da pool pela chave da semana e cria se
-// ainda não existir (id determinístico ev_auto_<segunda-feira>).
-export function spawnWeeklyEvent(eventos: EventosState): { eventos: EventosState; changed: boolean; novo?: string } {
-  const wk = getWeekStart();
-  const id = 'ev_auto_' + wk;
-  if ((eventos.eventos || []).some((e) => e.id === id)) return { eventos, changed: false };
-  const tpl = DEFAULT_EVENT_POOL[hashCode(wk) % DEFAULT_EVENT_POOL.length];
-  const [y, m, d] = wk.split('-').map(Number);
-  const fimDate = new Date(y, m - 1, d + 6);
-  const fim = `${fimDate.getFullYear()}-${String(fimDate.getMonth() + 1).padStart(2, '0')}-${String(fimDate.getDate()).padStart(2, '0')}`;
-  const novo = {
-    id, nome: tpl.nome, descricao: tpl.descricao, inicio: wk, fim,
-    recompensa: tpl.recompensa, recompensaCoins: tpl.coins, recompensaEfeito: tpl.efeito,
-    recompensaIcon: tpl.icon, status: 'ativo' as const, resgatado: false,
+// ─── Eventos automáticos (como evento de jogo) ───
+// Aleatórios: sorteio diário determinístico (25% de chance por dia, mesmo
+// resultado se rodar de novo no mesmo dia), até 2 simultâneos, duração da
+// própria template — o intervalo entre eventos fica irregular de verdade.
+// Sazonais: janelas fixas do calendário (Natal, Carnaval...). Podem coexistir.
+function addDaysStr(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return ymdLocal(new Date(y, m - 1, d + days));
+}
+
+export function spawnAutoEvents(eventos: EventosState): { eventos: EventosState; changed: boolean; novos: string[] } {
+  const t = today();
+  const [ano, mes] = t.split('-').map(Number);
+  const lista = [...(eventos.eventos || [])];
+  const novos: string[] = [];
+
+  const criar = (id: string, tpl: EventoTemplate, inicio: string, fim: string) => {
+    if (lista.some((e) => e.id === id)) return;
+    lista.push({
+      id, nome: tpl.nome, descricao: tpl.descricao, inicio, fim,
+      recompensa: tpl.recompensa, recompensaCoins: tpl.coins, recompensaEfeito: tpl.efeito,
+      recompensaIcon: tpl.icon, status: 'ativo', resgatado: false, mod: tpl.mod,
+    });
+    novos.push(tpl.nome);
   };
-  return { eventos: { ...eventos, eventos: [...(eventos.eventos || []), novo] }, changed: true, novo: tpl.nome };
+
+  // Sazonais — janela pode cruzar o ano (ex.: Virada de Ano).
+  for (const s of SEASONAL_EVENTS) {
+    const cruzaAno = s.inicio[0] > s.fim[0];
+    const anoInicio = cruzaAno && mes <= s.fim[0] ? ano - 1 : ano;
+    const ini = `${anoInicio}-${String(s.inicio[0]).padStart(2, '0')}-${String(s.inicio[1]).padStart(2, '0')}`;
+    const anoFim = cruzaAno ? anoInicio + 1 : anoInicio;
+    const fim = `${anoFim}-${String(s.fim[0]).padStart(2, '0')}-${String(s.fim[1]).padStart(2, '0')}`;
+    if (t >= ini && t <= fim) criar(`ev_sazonal_${s.key}_${anoInicio}`, s, ini, fim);
+  }
+
+  // Aleatórios — no máximo 2 ativos ao mesmo tempo.
+  const randAtivos = lista.filter((e) => e.id.startsWith('ev_rand_') && e.fim >= t).length;
+  if (randAtivos < 2 && hashCode('spawn' + t) % 100 < 25) {
+    const tpl = RANDOM_EVENT_POOL[hashCode('pick' + t) % RANDOM_EVENT_POOL.length];
+    const jaAtivo = lista.some((e) => e.nome === tpl.nome && e.fim >= t);
+    if (!jaAtivo) criar('ev_rand_' + t, tpl, t, addDaysStr(t, tpl.dur - 1));
+  }
+
+  return { eventos: { ...eventos, eventos: lista }, changed: novos.length > 0, novos };
+}
+
+// Eventos em andamento hoje (para exibir e para os multiplicadores).
+export function activeEvents(eventos: EventosState) {
+  const t = today();
+  return (eventos.eventos || []).filter((e) => e.inicio && e.fim && t >= e.inicio && t <= e.fim);
+}
+
+// Bônus/ônus combinados dos eventos ativos: multiplicam XP e moedas de tudo.
+export function activeEventMods(eventos: EventosState): { xpMult: number; coinsMult: number } {
+  let xp = 1, coins = 1;
+  for (const e of activeEvents(eventos)) {
+    if (e.mod?.xpMult) xp *= e.mod.xpMult;
+    if (e.mod?.coinsMult) coins *= e.mod.coinsMult;
+  }
+  return { xpMult: xp, coinsMult: coins };
 }
 
 // Vira o dia da água: arquiva os copos do dia que terminou no histórico e zera o contador.
@@ -398,6 +470,37 @@ export function updatePet(player: Player): { player: Player; evolved: boolean } 
   }
   p.pet.xp = (p.pet.xp || 0) + 1;
   return { player: p, evolved };
+}
+
+// Ícone do mascote conforme a espécie escolhida e o estágio atual.
+export function getPetIcon(pet: Pet | undefined): string {
+  const stage = pet?.stage || 0;
+  const sp = PET_SPECIES.find((s) => s.id === pet?.especie) || PET_SPECIES[0];
+  return sp.stages[Math.min(stage, sp.stages.length - 1)];
+}
+
+// Carinho diário: 1x por dia — humor sobe e o mascote traz um presentinho em moedas.
+export function petCarinho(player: Player): { player: Player; msg: string } | null {
+  const t = today();
+  const pet = player.pet || { name: '', stage: 0, xp: 0, evolutions: 0 };
+  if (pet.lastCarinho === t) return null;
+  const moedas = 3 + (pet.stage || 0) * 2;
+  const p = addCoins(player, moedas);
+  return {
+    player: { ...p, pet: { ...pet, humor: Math.min(100, (pet.humor ?? 70) + 15), xp: (pet.xp || 0) + 2, lastCarinho: t } },
+    msg: `Seu mascote amou o carinho! +15 humor · ele trouxe ${moedas} 🪙 pra você`,
+  };
+}
+
+// Petisco: custa 10 moedas, humor sobe bastante. Sem limite (o custo regula).
+export function petPetisco(player: Player): { player: Player; msg: string } | null {
+  const afterSpend = spendCoins(player, 10);
+  if (!afterSpend) return null;
+  const pet = afterSpend.pet || { name: '', stage: 0, xp: 0, evolutions: 0 };
+  return {
+    player: { ...afterSpend, pet: { ...pet, humor: Math.min(100, (pet.humor ?? 70) + 25), xp: (pet.xp || 0) + 5 } },
+    msg: 'Nham! Seu mascote devorou o petisco 🍖 (+25 humor)',
+  };
 }
 
 // ─── Attributes ───
@@ -498,24 +601,30 @@ export function applyActivityReward(
   player: Player,
   settings: { maxDailyXp: number; dailyXpGoal: number },
   reward: { xp: number; coins?: number; skill?: string },
+  mods?: { xpMult?: number; coinsMult?: number },
 ): { player: Player; leveledUp: boolean; bossDefeated: boolean } {
   const beforeLevel = player.level;
-  let p = addXP(player, reward.xp, settings, reward.skill);
-  if (reward.coins) p = addCoins(p, reward.coins);
+  // Bônus/ônus de eventos ativos multiplicam XP e moedas.
+  const xpFinal = Math.max(0, Math.round(reward.xp * (mods?.xpMult ?? 1)));
+  const coinsFinal = Math.round((reward.coins || 0) * (mods?.coinsMult ?? 1));
+  let p = addXP(player, xpFinal, settings, reward.skill);
+  if (coinsFinal) p = addCoins(p, coinsFinal);
   if (reward.skill) p = incrementAtributo(p, reward.skill);
 
-  // Ofensiva: ao bater a meta diária de XP, conta como dia ativo e evolui o pet.
+  // Ofensiva: ao bater a meta diária de XP, conta como dia ativo e evolui o pet
+  // (que também fica mais feliz por ver você cumprindo a meta).
   if (!p.metaBatidaHoje && (p.dailyXp || 0) >= (settings.dailyXpGoal || 100)) {
     p.metaBatidaHoje = true;
     p.streak = (p.streak || 0) + 1;
     if (p.streak > (p.bestStreak || 0)) p.bestStreak = p.streak;
     p = updatePet(p).player;
+    if (p.pet) p = { ...p, pet: { ...p.pet, humor: Math.min(100, (p.pet.humor ?? 70) + 10) } };
   }
 
   // Boss automático: invoca um se não houver E o respawn liberou (dia seguinte
   // à última derrota) — derrotar de novo exige esperar ele surgir.
   if (!p.bossActive && Date.now() >= (p.bossCooldownUntil || 0)) p = spawnBoss(p);
-  const dmg = bossDamage(p, reward.xp);
+  const dmg = bossDamage(p, xpFinal);
   p = dmg.player;
   if (dmg.defeated) p = addCoins(p, 50); // bônus por derrotar o chefe
 
@@ -527,9 +636,10 @@ export function applyMissionComplete(
   player: Player,
   mission: Mission,
   settings: { maxDailyXp: number; dailyXpGoal: number },
+  mods?: { xpMult?: number; coinsMult?: number },
 ): { player: Player; leveledUp: boolean; bossDefeated: boolean } {
   const skill = typeof mission.skill === 'string' ? mission.skill : undefined;
-  const res = applyActivityReward(player, settings, { xp: mission.reward.xp, coins: mission.reward.coins, skill });
+  const res = applyActivityReward(player, settings, { xp: mission.reward.xp, coins: mission.reward.coins, skill }, mods);
   const p = { ...res.player };
   p.totalMissionsDone = (p.totalMissionsDone || 0) + 1;
   if (mission.type === 'habit') p.totalHabitsDone = (p.totalHabitsDone || 0) + 1;

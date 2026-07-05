@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { PET_STAGES } from '@/lib/constants';
-import { revivePlayer, applyMissionComplete, today, nowMs } from '@/lib/engine';
+import { revivePlayer, applyMissionComplete, activeEventMods, activeEvents, getPetIcon, today, nowMs } from '@/lib/engine';
 import { useReward, RewardBanner } from '@/components/RewardFeedback';
 import ShareProgressButton from '@/components/ShareCard';
 import { play } from '@/lib/sound';
@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const player = useStore((s) => s.player);
   const missions = useStore((s) => s.missions);
   const settings = useStore((s) => s.settings);
+  const eventos = useStore((s) => s.eventos);
   const agua = useStore((s) => s.agua);
   const setAgua = useStore((s) => s.setAgua);
   const setPlayer = useStore((s) => s.setPlayer);
@@ -72,7 +73,7 @@ export default function DashboardPage() {
     const jaPremiada = m.type === 'mission' ? !!m.rewardedOn : m.rewardedOn === todayStr;
     updateMission(id, { done: true, completedAt: new Date().toISOString(), ...(jaPremiada ? {} : { rewardedOn: todayStr }) });
     if (jaPremiada) { play('check'); flash(`${m.title}: concluída ✓ (recompensa já recebida)`); return; }
-    const res = applyMissionComplete(player, m, settings);
+    const res = applyMissionComplete(player, m, settings, activeEventMods(useStore.getState().eventos));
     setPlayer(res.player);
     if (!res.leveledUp && !res.bossDefeated) play('check');
     flash(`${m.title}: +${m.reward.xp} XP${m.reward.coins ? ` · +${m.reward.coins} 🪙` : ''}${res.leveledUp ? ` · 🎉 Nível ${res.player.level}!` : ''}`);
@@ -133,6 +134,20 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Eventos em andamento — bônus/ônus valendo agora */}
+      {activeEvents(eventos).map((ev) => (
+        <Link key={ev.id} href="/eventos" className={`block p-3 rounded-lg border text-sm transition-colors ${
+          (ev.mod?.xpMult ?? 1) < 1 || (ev.mod?.coinsMult ?? 1) < 1
+            ? 'bg-red-950/30 border-red-900/40 text-red-200 hover:border-red-700'
+            : 'bg-indigo-950/40 border-indigo-800/50 text-indigo-200 hover:border-indigo-600'
+        }`}>
+          {ev.recompensaIcon || '🎉'} <b>{ev.nome}</b>
+          {ev.mod?.xpMult && ev.mod.xpMult !== 1 ? ` · XP ${ev.mod.xpMult}x` : ''}
+          {ev.mod?.coinsMult && ev.mod.coinsMult !== 1 ? ` · Moedas ${ev.mod.coinsMult}x` : ''}
+          <span className="text-xs opacity-70"> · até {new Date(ev.fim + 'T12:00').toLocaleDateString('pt-BR')}</span>
+        </Link>
+      ))}
+
       {/* KPI Grid */}
       <div className="grid grid-cols-4 gap-3">
         <KpiCard icon="⚡" value={`${player.xp}`} label={`XP / ${player.xpToNext}`} />
@@ -177,7 +192,7 @@ export default function DashboardPage() {
           <p className={`text-xs ${player.metaBatidaHoje ? 'text-orange-400 font-semibold' : 'text-zinc-500'}`}>
             {player.metaBatidaHoje ? '🔥 Ofensiva garantida hoje!' : '🔥 Bata a meta para somar +1 dia de ofensiva'}
           </p>
-          {petStage > 0 && <p className="text-xs text-zinc-500 mt-1">🐾 {PET_STAGES[petStage]?.icon} {PET_STAGES[petStage]?.name}</p>}
+          {petStage > 0 && <p className="text-xs text-zinc-500 mt-1">🐾 {getPetIcon(player.pet)} {PET_STAGES[petStage]?.name}{player.pet?.name ? ` — ${player.pet.name}` : ''}</p>}
         </div>
 
         {/* Água */}

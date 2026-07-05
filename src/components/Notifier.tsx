@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { canNotify, sendNotification } from '@/lib/notify';
-import { applyDailyReset, applyAguaReset, checkHallUnlocks, spawnWeeklyEvent, today } from '@/lib/engine';
+import { applyDailyReset, applyAguaReset, checkHallUnlocks, spawnAutoEvents, today } from '@/lib/engine';
 
 export default function Notifier() {
   const settings = useStore((s) => s.settings);
@@ -36,11 +36,11 @@ export default function Notifier() {
         hu.novos.forEach((n) => sendNotification('🏛️ Hall da Glória', `"${n}" desbloqueado — resgate sua recompensa!`));
       }
 
-      // Evento automático da semana (pool rotativa).
-      const ev = spawnWeeklyEvent(s.eventos);
+      // Eventos automáticos: sazonais (datas fixas) + aleatórios (sorteio diário).
+      const ev = spawnAutoEvents(s.eventos);
       if (ev.changed) {
         s.setEventos(ev.eventos);
-        if (ev.novo) sendNotification('🎉 Evento da semana', `"${ev.novo}" começou — veja em Eventos!`);
+        ev.novos.forEach((n) => sendNotification('🎉 Novo evento!', `"${n}" começou — veja em Eventos!`));
       }
     };
     check();

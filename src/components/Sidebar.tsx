@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useStore } from '@/lib/store';
-import { PET_STAGES } from '@/lib/constants';
+import { getPetIcon } from '@/lib/engine';
 import { cn } from '@/lib/utils';
 
 // A rotina diária fica fixa no topo (lição do Duolingo/Finch: o loop do dia
@@ -120,7 +120,7 @@ export default function Sidebar() {
             🔥 {player.streak}
           </span>
           <span className="px-2 py-0.5 rounded bg-yellow-900/40 text-yellow-400">🪙 {player.coins}</span>
-          {petStage > 0 && <span className="px-2 py-0.5 rounded bg-sky-900/40 text-sky-400">{PET_STAGES[petStage]?.icon}</span>}
+          {petStage > 0 && <span className="px-2 py-0.5 rounded bg-sky-900/40 text-sky-400">{getPetIcon(player.pet)}</span>}
         </div>
         <div className="space-y-0.5">
           <div className="flex justify-between text-[10px] text-zinc-500">

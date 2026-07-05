@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { createMission, applyMissionComplete, today } from '@/lib/engine';
+import { createMission, applyMissionComplete, activeEventMods, today } from '@/lib/engine';
 import { play } from '@/lib/sound';
 import { DIFFICULTIES, SKILL_NAMES } from '@/lib/constants';
 import type { Difficulty, MissionType } from '@/lib/types';
@@ -47,7 +47,7 @@ export default function CampoPage() {
     const jaPremiada = m.type === 'mission' ? !!m.rewardedOn : m.rewardedOn === todayStr;
     updateMission(id, { done: true, completedAt: new Date().toISOString(), ...(jaPremiada ? {} : { rewardedOn: todayStr }) });
     if (jaPremiada) { play('check'); flash(`${m.title}: concluída ✓ (recompensa já recebida)`); return; }
-    const res = applyMissionComplete(player, m, settings);
+    const res = applyMissionComplete(player, m, settings, activeEventMods(useStore.getState().eventos));
     setPlayer(res.player);
     if (!res.leveledUp && !res.bossDefeated) play('check');
     const extras = [`+${m.reward.xp} XP`, m.reward.coins ? `+${m.reward.coins} 🪙` : '']

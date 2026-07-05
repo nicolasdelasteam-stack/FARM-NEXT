@@ -51,6 +51,9 @@ export interface Pet {
   stage: number;
   xp: number;
   evolutions: number;
+  especie?: string;      // id em PET_SPECIES (fênix, dragão, lobo...)
+  humor?: number;        // 0-100 — cai um pouco por dia, sobe com carinho/petisco/meta batida
+  lastCarinho?: string;  // 'YYYY-MM-DD' do último carinho (1x por dia, rende presentinho)
 }
 
 export interface Agua {
@@ -141,7 +144,8 @@ export interface DesejoItem { id: string; nome: string; valor: number; prioridad
 export interface ComprasState { mercado: CompraItem[]; desejos: DesejoItem[]; }
 
 export type EventoStatus = 'ativo' | 'concluido' | 'expirado';
-export interface Evento { id: string; nome: string; descricao: string; inicio: string; fim: string; recompensa: string; recompensaCoins: number; recompensaEfeito?: string; recompensaIcon?: string; status: EventoStatus; resgatado: boolean; }
+// mod = bônus/ônus global enquanto o evento está ativo (multiplica XP/moedas de tudo).
+export interface Evento { id: string; nome: string; descricao: string; inicio: string; fim: string; recompensa: string; recompensaCoins: number; recompensaEfeito?: string; recompensaIcon?: string; status: EventoStatus; resgatado: boolean; mod?: { xpMult?: number; coinsMult?: number }; }
 export interface ItemInventario { id: string; nome: string; icon: string; origem: string; usado: boolean; efeito?: string; }
 export interface EventosState { eventos: Evento[]; inventario: ItemInventario[]; }
 

@@ -159,7 +159,7 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'zenite-storage',
-      version: 10,
+      version: 11, // v11: bosses do Notion + eventos automáticos com mod (merge por id reexecuta)
       migrate: (persisted: unknown) => {
         const p = (persisted || {}) as Record<string, unknown>;
 
