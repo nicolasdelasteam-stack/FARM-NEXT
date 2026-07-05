@@ -314,6 +314,10 @@ export function bossDamage(player: Player, amount: number): { player: Player; de
   if (p.bossHp <= 0) {
     p.bossActive = false;
     p.bossDefeated = (p.bossDefeated || 0) + 1;
+    // Derrotado é derrotado: o próximo boss só surge no dia seguinte (meia-noite local).
+    const d = new Date();
+    d.setHours(24, 0, 0, 0);
+    p.bossCooldownUntil = d.getTime();
     return { player: p, defeated: true };
   }
   return { player: p, defeated: false };
@@ -452,8 +456,9 @@ export function applyActivityReward(
     p = updatePet(p).player;
   }
 
-  // Boss automático: invoca um se não houver e causa dano igual ao XP ganho.
-  if (!p.bossActive) p = spawnBoss(p);
+  // Boss automático: invoca um se não houver E o respawn liberou (dia seguinte
+  // à última derrota) — derrotar de novo exige esperar ele surgir.
+  if (!p.bossActive && Date.now() >= (p.bossCooldownUntil || 0)) p = spawnBoss(p);
   const dmg = bossDamage(p, reward.xp);
   p = dmg.player;
   if (dmg.defeated) p = addCoins(p, 50); // bônus por derrotar o chefe

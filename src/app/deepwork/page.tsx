@@ -1,21 +1,24 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
-import { uid, rand } from '@/lib/engine';
-import { AMBIENT_SOUNDS, DEEPWORK_CHECKLIST } from '@/lib/constants';
+import { uid } from '@/lib/engine';
+import { AMBIENT_TRACKS, DEEPWORK_CHECKLIST } from '@/lib/constants';
+import { ambientToggle, ambientVolume, ambientPauseAll } from '@/lib/sound';
 import { useReward, RewardBanner } from '@/components/RewardFeedback';
 
 export default function DeepWorkPage() {
   const deepwork = useStore((s) => s.deepwork);
   const setDeepwork = useStore((s) => s.setDeepwork);
   const { msg, reward } = useReward();
-  const acRef = useRef<AudioContext | null>(null);
-  const nodesRef = useRef<Record<string, { src: AudioBufferSourceNode; gain: GainNode }>>({});
   const [active, setActive] = useState<Record<string, boolean>>({});
-  const [vol, setVol] = useState<Record<string, number>>(() => Object.fromEntries(AMBIENT_SOUNDS.map((s) => [s.id, 0.4])));
+  const [erro, setErro] = useState<Record<string, boolean>>({});
+  const [vol, setVol] = useState<Record<string, number>>(() => Object.fromEntries(AMBIENT_TRACKS.map((s) => [s.id, 0.6])));
   const [mtexto, setMtexto] = useState('');
   const [mimg, setMimg] = useState('');
+
+  // Pausa tudo ao sair da página.
+  useEffect(() => () => ambientPauseAll(), []);
 
   const check = deepwork.checklist || [];
   const toggleCheck = (i: number) => {
@@ -25,26 +28,15 @@ export default function DeepWorkPage() {
   };
   const feitos = check.filter(Boolean).length;
 
-  const ensureAC = () => {
-    if (!acRef.current) { const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext; acRef.current = new AC(); }
-    return acRef.current;
+  // Sons ambiente reais (arquivos locais em public/sounds) tocados em loop.
+  const toggleSound = (snd: { id: string; src: string }) => {
+    const tocando = ambientToggle(snd.id, snd.src, vol[snd.id] ?? 0.6, () => {
+      setErro((er) => ({ ...er, [snd.id]: true }));
+      setActive((s) => ({ ...s, [snd.id]: false }));
+    });
+    setActive({ ...active, [snd.id]: tocando });
   };
-  const makeNoise = (ac: AudioContext) => {
-    const buf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = rand() * 2 - 1;
-    const s = ac.createBufferSource(); s.buffer = buf; s.loop = true; return s;
-  };
-  const toggleSound = (snd: { id: string; type: string; freq: number }) => {
-    const ac = ensureAC(); if (ac.state === 'suspended') ac.resume();
-    if (active[snd.id]) { try { nodesRef.current[snd.id]?.src.stop(); } catch {} delete nodesRef.current[snd.id]; setActive({ ...active, [snd.id]: false }); return; }
-    const src = makeNoise(ac);
-    const filter = ac.createBiquadFilter(); filter.type = snd.type as BiquadFilterType; filter.frequency.value = snd.freq;
-    const gain = ac.createGain(); gain.gain.value = vol[snd.id] ?? 0.4;
-    src.connect(filter); filter.connect(gain); gain.connect(ac.destination); src.start();
-    nodesRef.current[snd.id] = { src, gain }; setActive({ ...active, [snd.id]: true });
-  };
-  const setVolume = (id: string, v: number) => { setVol({ ...vol, [id]: v }); const n = nodesRef.current[id]; if (n) n.gain.gain.value = v; };
+  const setVolume = (id: string, v: number) => { setVol({ ...vol, [id]: v }); ambientVolume(id, v); };
 
   const addMeta = () => { if (!mtexto.trim() && !mimg.trim()) return; setDeepwork({ ...deepwork, metas: [...(deepwork.metas || []), { id: uid(), texto: mtexto.trim(), img: mimg.trim() }] }); setMtexto(''); setMimg(''); };
   const delMeta = (id: string) => setDeepwork({ ...deepwork, metas: (deepwork.metas || []).filter((m) => m.id !== id) });
@@ -73,14 +65,17 @@ export default function DeepWorkPage() {
         <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
           <div className="text-sm font-bold mb-3">🎧 Sons ambiente</div>
           <div className="space-y-2">
-            {AMBIENT_SOUNDS.map((snd) => (
+            {AMBIENT_TRACKS.map((snd) => (
               <div key={snd.id} className="flex items-center gap-2">
-                <button onClick={() => toggleSound(snd)} className={`px-2 py-1.5 rounded-lg text-sm w-32 text-left ${active[snd.id] ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-zinc-300'}`}>{active[snd.id] ? '⏸' : '▶'} {snd.label}</button>
-                <input type="range" min={0} max={1} step={0.05} value={vol[snd.id] ?? 0.4} onChange={(e) => setVolume(snd.id, parseFloat(e.target.value))} className="flex-1 accent-indigo-500" />
+                <button onClick={() => toggleSound(snd)} disabled={erro[snd.id]}
+                  className={`px-2 py-1.5 rounded-lg text-sm w-32 text-left ${erro[snd.id] ? 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed' : active[snd.id] ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-zinc-300'}`}>
+                  {erro[snd.id] ? '⚠' : active[snd.id] ? '⏸' : '▶'} {snd.label}
+                </button>
+                <input type="range" min={0} max={1} step={0.05} value={vol[snd.id] ?? 0.6} onChange={(e) => setVolume(snd.id, parseFloat(e.target.value))} className="flex-1 accent-indigo-500" />
               </div>
             ))}
           </div>
-          <p className="text-[11px] text-zinc-600 mt-2">Sons gerados no navegador (Web Audio). Misture e ajuste o volume de cada um.</p>
+          <p className="text-[11px] text-zinc-600 mt-2">Gravações reais em loop (Wikimedia Commons). Misture e ajuste o volume de cada uma.</p>
         </div>
       </div>
 

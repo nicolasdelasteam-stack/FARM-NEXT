@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { PET_STAGES } from '@/lib/constants';
-import { revivePlayer, applyMissionComplete, today } from '@/lib/engine';
+import { revivePlayer, applyMissionComplete, today, nowMs } from '@/lib/engine';
 import { useReward, RewardBanner } from '@/components/RewardFeedback';
 import ShareProgressButton from '@/components/ShareCard';
 import { play } from '@/lib/sound';
@@ -121,6 +121,12 @@ export default function DashboardPage() {
             <div className="h-full rounded-full transition-all duration-500" style={{ width: `${bossHpPct}%`, background: 'linear-gradient(90deg, #ef4444, #dc2626)' }} />
           </div>
           <p className="text-xs text-zinc-500 mt-1">💬 {player.bossLore}</p>
+        </div>
+      )}
+
+      {!player.bossActive && (player.bossCooldownUntil || 0) > nowMs() && (
+        <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-zinc-400">
+          ⚰️ Boss derrotado! O próximo inimigo surge <b className="text-indigo-300">amanhã</b>.
         </div>
       )}
 

@@ -53,6 +53,37 @@ export type SoundName =
   | 'chime'    // sessão de foco concluída — sino suave
   | 'error';   // ação inválida (sem moedas etc.)
 
+// ─── Sons ambiente do Deep Work (arquivos reais em public/sounds) ───
+// Gerência fora dos componentes (padrão da lib) para não esbarrar nas regras
+// de imutabilidade do React Compiler.
+const ambientes: Record<string, HTMLAudioElement> = {};
+
+// Alterna um som ambiente; retorna true se ficou tocando, false se pausou.
+export function ambientToggle(id: string, src: string, volume: number, onError: () => void): boolean {
+  const atual = ambientes[id];
+  if (atual && !atual.paused) { atual.pause(); return false; }
+  let a = atual;
+  if (!a) {
+    a = new Audio(src);
+    a.loop = true;
+    a.preload = 'auto';
+    a.onerror = onError;
+    ambientes[id] = a;
+  }
+  a.volume = volume;
+  a.play().catch(onError);
+  return true;
+}
+
+export function ambientVolume(id: string, v: number) {
+  const a = ambientes[id];
+  if (a) a.volume = v;
+}
+
+export function ambientPauseAll() {
+  Object.values(ambientes).forEach((a) => a.pause());
+}
+
 export function play(name: SoundName) {
   const a = ctx();
   if (!a) return;

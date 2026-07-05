@@ -97,6 +97,7 @@ export interface Player {
   bossDefeated: number;
   bossActive: boolean;
   bossIcon?: string;
+  bossCooldownUntil?: number; // ms — boss derrotado só reaparece após este instante (dia seguinte)
   pet: Pet;
   capa: number;
   xpBoostUntil?: number;
@@ -171,9 +172,21 @@ export interface CasaLembrete { id: string; texto: string; done: boolean; }
 export interface CasaState { areas: CasaArea[]; tarefas: CasaTarefa[]; lembretes: CasaLembrete[]; }
 
 export type LivroStatus = 'quero_ler' | 'lendo' | 'lido';
-export interface Materia { id: string; nome: string; emoji: string; dia: string; horario: string; professor: string; resumo: string; }
+export interface Materia { id: string; nome: string; emoji: string; dia: string; horario: string; professor: string; resumo: string; capa?: string; }
 export interface Livro { id: string; titulo: string; tipo: string; link: string; status: LivroStatus; progresso: number; }
-export interface EstudosState { materias: Materia[]; biblioteca: Livro[]; }
+// Página estilo Notion dentro de uma matéria: aninhável (parentId), com texto,
+// imagens (data-URL) e links/PDFs — para resumos e material de estudo.
+export interface PaginaEstudo {
+  id: string;
+  materiaId: string;
+  parentId: string | null;
+  titulo: string;
+  icon: string;
+  conteudo: string;
+  imagens: string[];
+  links: { titulo: string; url: string }[];
+}
+export interface EstudosState { materias: Materia[]; biblioteca: Livro[]; paginas: PaginaEstudo[]; }
 
 // ─── FARM-NEXT extras (Finanças) ───
 export interface Transacao { id: string; desc: string; valor: number; tipo: 'receita' | 'despesa'; categoria?: string; data: string; }

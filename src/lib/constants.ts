@@ -210,12 +210,14 @@ export const PACKING_SUGGESTIONS: Record<string, string[]> = {
   Eletrônicos: ['Carregador', 'Fone', 'Power bank', 'Adaptador', 'Câmera'],
   Outros: ['Remédios', 'Óculos de sol', 'Guarda-chuva', 'Snacks'],
 };
-export const AMBIENT_SOUNDS = [
-  { id: 'chuva', label: '🌧️ Chuva', type: 'lowpass', freq: 1200 },
-  { id: 'cafe', label: '☕ Cafeteria', type: 'bandpass', freq: 700 },
-  { id: 'vento', label: '🌬️ Vento', type: 'highpass', freq: 500 },
-  { id: 'ondas', label: '🌊 Ondas', type: 'lowpass', freq: 600 },
-  { id: 'fogo', label: '🔥 Fogueira', type: 'lowpass', freq: 900 },
+// Sons ambiente reais (arquivos em public/sounds, origem Wikimedia Commons —
+// ver public/sounds/CREDITS.md). Substituíram o ruído sintetizado.
+export const AMBIENT_TRACKS = [
+  { id: 'chuva', label: '🌧️ Chuva', src: '/sounds/chuva.ogg' },
+  { id: 'cafe', label: '☕ Cafeteria', src: '/sounds/cafeteria.ogg' },
+  { id: 'vento', label: '🌬️ Vento', src: '/sounds/vento.ogg' },
+  { id: 'ondas', label: '🌊 Ondas', src: '/sounds/ondas.ogg' },
+  { id: 'fogo', label: '🔥 Fogueira', src: '/sounds/fogueira.ogg' },
 ];
 export const DEEPWORK_CHECKLIST = [
   'Desligar notificações do celular',
