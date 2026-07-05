@@ -49,6 +49,7 @@ export default function CampoPage() {
     if (jaPremiada) { play('check'); flash(`${m.title}: concluída ✓ (recompensa já recebida)`); return; }
     const res = applyMissionComplete(player, m, settings, activeEventMods(useStore.getState().eventos));
     setPlayer(res.player);
+    useStore.getState().bumpWeekMissao(); // alimenta o boss "missões da semana"
     if (!res.leveledUp && !res.bossDefeated) play('check');
     const extras = [`+${m.reward.xp} XP`, m.reward.coins ? `+${m.reward.coins} 🪙` : '']
       .concat(res.leveledUp ? [`🎉 Subiu para o nível ${res.player.level}!`] : [])

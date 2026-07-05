@@ -206,6 +206,8 @@ export interface FinancasState { transacoes: Transacao[]; metas: MetaFinanceira[
 // ─── FARM-NEXT extras (Boss Fight) ───
 export type BossDificuldade = 'facil' | 'media' | 'dificil' | 'epico';
 export type BossPeriodo = 'semanal' | 'mensal' | 'unico';
+// Requisito automático: o boss se derrota sozinho quando a métrica real da aba bate o alvo.
+export type BossAutoTipo = 'treinos_semana' | 'agua_semana' | 'casa_zerada' | 'financas_mes' | 'missoes_semana' | 'streak' | 'foco_total';
 export interface Boss {
   id: string;
   nome: string;
@@ -225,6 +227,7 @@ export interface Boss {
   derrotado: boolean;
   penalizado?: boolean;
   data: string | null;
+  auto?: { tipo: BossAutoTipo; valor: number };  // se presente, derrota automática ao cumprir
 }
 export interface BossState { bosses: Boss[]; }
 

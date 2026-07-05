@@ -6,6 +6,7 @@ import type {
   FinancasState, BossState, CerebroState, Nota, MidiaItem,
 } from './types';
 import { DEFAULT_PLAYER, DEFAULT_SETTINGS, INITIAL_MARKET, DEFAULT_HALL, DEFAULT_BOSSES } from './constants';
+import { weekKey, today } from './engine';
 
 const YEAR = new Date().getFullYear();
 
@@ -31,6 +32,7 @@ export interface AppState {
   player: Player;
   missions: Mission[];
   missionHistory: Mission[];
+  weekStats: { week: string; missoes: number }; // contador semanal (boss "missões da semana")
   settings: Settings;
   market: typeof INITIAL_MARKET;
   agua: { copos: number; meta: number; historico: Record<string, { copos: number; completou: boolean }> };
@@ -64,6 +66,7 @@ export interface AppState {
   setPlayer: (player: Player) => void;
   setMissions: (missions: Mission[]) => void;
   setMissionHistory: (missionHistory: Mission[]) => void;
+  bumpWeekMissao: () => void;
   setSettings: (settings: Settings) => void;
   setRoute: (route: string) => void;
   setView: (view: string) => void;
@@ -99,6 +102,7 @@ export const useStore = create<AppState>()(
       player: { ...DEFAULT_PLAYER },
       missions: [],
       missionHistory: [],
+      weekStats: { week: '', missoes: 0 },
       settings: { ...DEFAULT_SETTINGS },
       market: { ...INITIAL_MARKET, purchases: [] },
       agua: { copos: 0, meta: 8, historico: {} },
@@ -129,6 +133,12 @@ export const useStore = create<AppState>()(
       setPlayer: (player) => set({ player }),
       setMissions: (missions) => set({ missions }),
       setMissionHistory: (missionHistory) => set({ missionHistory }),
+      // Conta +1 missão na semana (zera sozinho quando a semana vira).
+      bumpWeekMissao: () => set((s) => {
+        const wk = weekKey(today());
+        const atual = s.weekStats.week === wk ? s.weekStats.missoes : 0;
+        return { weekStats: { week: wk, missoes: atual + 1 } };
+      }),
       setSettings: (settings) => set({ settings }),
       setRoute: (route) => set({ route }),
       setView: (view) => set({ view }),
@@ -159,7 +169,7 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'zenite-storage',
-      version: 11, // v11: bosses do Notion + eventos automáticos com mod (merge por id reexecuta)
+      version: 12, // v12: requisito automático (auto) nos bosses rastreáveis
       migrate: (persisted: unknown) => {
         const p = (persisted || {}) as Record<string, unknown>;
 
@@ -171,7 +181,11 @@ export const useStore = create<AppState>()(
         // v10: novos bosses/troféus padrão entram nos dados já salvos (merge por id);
         // troféus existentes ganham o requisito automático (auto) dos padrões.
         const bossAntigo = ((p.boss as BossState) || D.boss()).bosses || [];
-        const bossMerged = [...bossAntigo, ...DEFAULT_BOSSES.filter((d) => !bossAntigo.some((b) => b.id === d.id)).map((b) => ({ ...b }))];
+        const bossMerged = [
+          // v12: bosses já salvos recebem o requisito automático (auto) do padrão.
+          ...bossAntigo.map((b) => { const d = DEFAULT_BOSSES.find((x) => x.id === b.id); return d?.auto && !b.auto ? { ...b, auto: d.auto } : b; }),
+          ...DEFAULT_BOSSES.filter((d) => !bossAntigo.some((b) => b.id === d.id)).map((b) => ({ ...b })),
+        ];
 
         const hallAntigo = (p.hall as Trofeu[]) || [...DEFAULT_HALL];
         const hallMerged = [
@@ -187,6 +201,7 @@ export const useStore = create<AppState>()(
           ...p,
           missions,
           missionHistory: p.missionHistory || [],
+          weekStats: p.weekStats || { week: '', missoes: 0 },
           dieta: p.dieta || D.dieta(),
           compras: p.compras || D.compras(),
           eventos: p.eventos || D.eventos(),

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
-import { uid, today, addCoins, addXP, refreshBosses, applyBossPenalties } from '@/lib/engine';
+import { uid, today, addCoins, addXP, refreshBosses, applyBossPenalties, computeBossMetrics, checkBossAutoDefeats, bossAutoProgress, weekMissoesOf } from '@/lib/engine';
 import { play } from '@/lib/sound';
 import { BOSS_DIFICULDADE, BOSS_PERIODO, REWARD_ITEMS } from '@/lib/constants';
 import type { Boss } from '@/lib/types';
@@ -25,6 +25,18 @@ export default function BossPage() {
   const settings = useStore((s) => s.settings);
   const eventos = useStore((s) => s.eventos);
   const setEventos = useStore((s) => s.setEventos);
+  const treinos = useStore((s) => s.treinos);
+  const agua = useStore((s) => s.agua);
+  const casa = useStore((s) => s.casa);
+  const financas = useStore((s) => s.financas);
+  const weekStats = useStore((s) => s.weekStats);
+
+  // Métricas reais das abas para o progresso automático dos bosses.
+  const metrics = computeBossMetrics({
+    player, treinosLogs: treinos.logs || [], aguaHist: agua.historico || {},
+    casaTarefas: casa.tarefas || [], transacoes: financas.transacoes || [],
+    weekMissoes: weekMissoesOf(weekStats),
+  });
 
   const [tab, setTab] = useState<'ativos' | 'bestiario'>('ativos');
   const [open, setOpen] = useState(false);
@@ -39,13 +51,29 @@ export default function BossPage() {
   const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
   const EMO = ['👿', '🌀', '🌑', '📱', '🔥', '🛋️', '🍩', '💀', '🐉', '👹', '🧟', '⚰️', '👺', '🦑', '🕷️', '🐍', '🦂', '🩸'];
 
-  // Reset de recorrentes + penalidade por prazo vencido (roda no mount).
+  // Ao abrir: recorrentes renascem, penalidade por prazo vencido e derrota
+  // automática dos que já cumpriram o requisito nas abas (feedback instantâneo;
+  // o Notifier faz o mesmo em segundo plano mesmo sem abrir esta aba).
   useEffect(() => {
-    const r = refreshBosses(boss.bosses);
-    const pen = applyBossPenalties(player, r.bosses, settings);
-    if (r.changed || pen.changed) {
-      setBoss({ ...boss, bosses: pen.bosses });
-      if (pen.changed) setPlayer(pen.player);
+    const s = useStore.getState();
+    const r = refreshBosses(s.boss.bosses);
+    const pen = applyBossPenalties(s.player, r.bosses, s.settings);
+    const m = computeBossMetrics({
+      player: pen.player, treinosLogs: s.treinos.logs || [], aguaHist: s.agua.historico || {},
+      casaTarefas: s.casa.tarefas || [], transacoes: s.financas.transacoes || [],
+      weekMissoes: weekMissoesOf(s.weekStats),
+    });
+    const auto = checkBossAutoDefeats(pen.player, pen.bosses, s.settings, m);
+    if (r.changed || pen.changed || auto.defeated.length > 0) {
+      setPlayer(auto.player);
+      setBoss({ ...s.boss, bosses: auto.bosses });
+      if (auto.invItems.length > 0) {
+        setEventos({ ...s.eventos, inventario: [...s.eventos.inventario, ...auto.invItems.map((it) => ({ id: uid(), nome: it.nome, icon: '🎁', origem: it.origem, usado: false, efeito: it.efeito }))] });
+      }
+      if (auto.defeated.length > 0) {
+        // Fora do corpo síncrono do efeito (regra react-hooks/set-state-in-effect).
+        setTimeout(() => { play('boss'); flash(`⚔️ Derrotado automaticamente: ${auto.defeated.join(', ')}! Recompensa no inventário.`); }, 0);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -211,6 +239,26 @@ export default function BossPage() {
                 {b.condicao && <p>🕯️ <b className="text-zinc-300">Aparece:</b> {b.condicao}</p>}
                 {b.recompensa && <p>🎁 <b className="text-zinc-300">Recompensa:</b> {b.recompensa}</p>}
               </div>
+
+              {/* Progresso automático — enche sozinho conforme você usa as abas */}
+              {!b.derrotado && b.auto && (() => {
+                const prog = bossAutoProgress(b, metrics);
+                if (!prog) return null;
+                const pct = Math.min(100, Math.round((prog.have / prog.need) * 100));
+                const bin = prog.need === 1; // casa/finanças = sim/não
+                return (
+                  <div className="mt-2 p-2 rounded-lg bg-indigo-950/30 border border-indigo-900/40">
+                    <div className="flex justify-between text-[10px] text-indigo-300 mb-1">
+                      <span>🤖 Progresso automático</span>
+                      <span>{bin ? (prog.have ? 'cumprido!' : 'pendente') : `${prog.have}/${prog.need}`}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                      <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                    <p className="text-[10px] text-zinc-500 mt-1">Derrota sozinho ao cumprir — sem precisar clicar.</p>
+                  </div>
+                );
+              })()}
               <div className="flex justify-between items-center mt-3">
                 <span className="text-xs text-yellow-400">{b.recompensaCoins ? `🪙 ${b.recompensaCoins}` : ''}{b.recompensaXp ? ` ⭐ ${b.recompensaXp} XP` : ''}</span>
                 {b.derrotado

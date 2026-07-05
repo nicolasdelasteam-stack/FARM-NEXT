@@ -77,6 +77,97 @@ export function applyBossPenalties(
   return { player: p, bosses: next, changed, penalized };
 }
 
+// ─── Requisitos automáticos dos bosses (ligados aos dados reais das abas) ───
+export interface BossMetrics {
+  treinosSemana: number;      // dias com treino registrado nesta semana
+  aguaSemana: number;         // dias com meta de água batida nesta semana
+  casaZerada: boolean;        // todas as tarefas da casa concluídas
+  financasMesPositivo: boolean; // saldo do mês (receitas − despesas) ≥ 0
+  missoesSemana: number;      // missões concluídas nesta semana
+  streak: number;
+  focoTotal: number;
+}
+
+// Missões concluídas na semana atual, a partir do contador persistente do store
+// (zera sozinho na virada da semana). Dailies resetam e perdem completedAt, por
+// isso um contador dedicado é mais fiel do que varrer as missões.
+export function weekMissoesOf(weekStats: { week: string; missoes: number }): number {
+  return weekStats.week === weekKey(today()) ? weekStats.missoes : 0;
+}
+
+// Calcula as métricas a partir das fatias do estado (engine fica desacoplado do store).
+export function computeBossMetrics(d: {
+  player: Player;
+  treinosLogs: { data: string }[];
+  aguaHist: Record<string, { completou: boolean }>;
+  casaTarefas: { done: boolean }[];
+  transacoes: { tipo: string; valor: number; data: string }[];
+  weekMissoes: number;
+}): BossMetrics {
+  const wk = weekKey(today());
+  const mes = today().slice(0, 7);
+  const treinosSemana = new Set(d.treinosLogs.filter((l) => weekKey(l.data) === wk).map((l) => l.data)).size;
+  const aguaSemana = Object.entries(d.aguaHist || {}).filter(([data, h]) => h.completou && weekKey(data) === wk).length;
+  const casaZerada = d.casaTarefas.length > 0 && d.casaTarefas.every((t) => t.done);
+  const saldo = d.transacoes.filter((t) => t.data?.slice(0, 7) === mes)
+    .reduce((s, t) => s + (t.tipo === 'receita' ? t.valor : -t.valor), 0);
+  return {
+    treinosSemana,
+    aguaSemana,
+    casaZerada,
+    financasMesPositivo: d.transacoes.some((t) => t.data?.slice(0, 7) === mes) && saldo >= 0,
+    missoesSemana: d.weekMissoes,
+    streak: Math.max(d.player.streak || 0, 0),
+    focoTotal: d.player.totalFocusMinutes || 0,
+  };
+}
+
+// Valor atual vs. alvo de um boss automático (para barra de progresso e checagem).
+export function bossAutoProgress(boss: Boss, m: BossMetrics): { have: number; need: number } | null {
+  if (!boss.auto) return null;
+  switch (boss.auto.tipo) {
+    case 'treinos_semana': return { have: m.treinosSemana, need: boss.auto.valor };
+    case 'agua_semana': return { have: m.aguaSemana, need: boss.auto.valor };
+    case 'missoes_semana': return { have: m.missoesSemana, need: boss.auto.valor };
+    case 'streak': return { have: m.streak, need: boss.auto.valor };
+    case 'foco_total': return { have: m.focoTotal, need: boss.auto.valor };
+    case 'casa_zerada': return { have: m.casaZerada ? 1 : 0, need: 1 };
+    case 'financas_mes': return { have: m.financasMesPositivo ? 1 : 0, need: 1 };
+  }
+}
+
+export function bossAutoMet(boss: Boss, m: BossMetrics): boolean {
+  const p = bossAutoProgress(boss, m);
+  return !!p && p.have >= p.need;
+}
+
+// Deriva a derrota dos bosses automáticos cujo requisito foi cumprido nas abas.
+// Mesma recompensa da derrota manual (moedas/XP/contador + item pro inventário).
+export function checkBossAutoDefeats(
+  player: Player,
+  bosses: Boss[],
+  settings: { maxDailyXp: number; dailyXpGoal: number },
+  m: BossMetrics,
+): { player: Player; bosses: Boss[]; invItems: { nome: string; efeito?: string; origem: string }[]; defeated: string[] } {
+  let p = player;
+  let changed = false;
+  const invItems: { nome: string; efeito?: string; origem: string }[] = [];
+  const defeated: string[] = [];
+  const next = bosses.map((b) => {
+    if (b.auto && !b.derrotado && bossAutoMet(b, m)) {
+      if (b.recompensaCoins > 0) p = addCoins(p, b.recompensaCoins);
+      if (b.recompensaXp > 0) p = addXP(p, b.recompensaXp, settings);
+      p = { ...p, bossDefeated: (p.bossDefeated || 0) + 1 };
+      if (b.recompensa) invItems.push({ nome: b.recompensa, efeito: b.recompensaEfeito, origem: `Boss: ${b.nome}` });
+      defeated.push(b.nome);
+      changed = true;
+      return { ...b, derrotado: true, data: today() };
+    }
+    return b;
+  });
+  return { player: p, bosses: changed ? next : bosses, invItems, defeated };
+}
+
 // Chamadas impuras isoladas na lib (fora de componentes) — evitam o erro react-hooks/purity.
 export function nowMs(): number {
   return Date.now();

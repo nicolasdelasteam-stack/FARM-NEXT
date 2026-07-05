@@ -6,6 +6,7 @@ import CloudSettings from '@/components/CloudSettings';
 
 export default function ConfigPage() {
   const player = useStore((s) => s.player);
+  const setPlayer = useStore((s) => s.setPlayer);
   const settings = useStore((s) => s.settings);
   const setSettings = useStore((s) => s.setSettings);
   const missionHistory = useStore((s) => s.missionHistory);
@@ -20,13 +21,16 @@ export default function ConfigPage() {
         <div className="space-y-3">
           <div>
             <label className="text-xs text-zinc-500 block mb-1">Nome</label>
-            <input className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm"
-              defaultValue={player.name} placeholder="Seu nome" />
+            <input className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm outline-none focus:border-indigo-500"
+              value={player.name} placeholder="Seu nome" onChange={(e) => setPlayer({ ...player, name: e.target.value })} />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 block mb-1">Avatar</label>
-            <input className="w-20 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-lg text-center"
-              defaultValue={player.avatar || '😺'} />
+            <label className="text-xs text-zinc-500 block mb-1">Avatar (emoji)</label>
+            <input className="w-20 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-lg text-center outline-none focus:border-indigo-500"
+              value={player.photo ? '🖼️' : (player.avatar || '😺')} maxLength={2}
+              disabled={!!player.photo}
+              onChange={(e) => setPlayer({ ...player, avatar: e.target.value || '😺' })} />
+            <p className="text-[11px] text-zinc-600 mt-1">Para foto/GIF e objetivos, use <b>Personagem → Editar Perfil</b>. Salva automaticamente.</p>
           </div>
         </div>
       </div>
