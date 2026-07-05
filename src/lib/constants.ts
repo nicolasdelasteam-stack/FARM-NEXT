@@ -333,18 +333,6 @@ export const PACKING_SUGGESTIONS: Record<string, string[]> = {
   Eletrônicos: ['Carregador', 'Fone', 'Power bank', 'Adaptador', 'Câmera'],
   Outros: ['Remédios', 'Óculos de sol', 'Guarda-chuva', 'Snacks'],
 };
-// Sons ambiente reais (arquivos em public/sounds, origem Wikimedia Commons —
-// ver public/sounds/CREDITS.md). Substituíram o ruído sintetizado.
-export const AMBIENT_TRACKS = [
-  { id: 'chuva', label: '🌧️ Chuva', src: '/sounds/chuva.ogg' },
-  { id: 'tempestade', label: '⛈️ Tempestade', src: '/sounds/tempestade.ogg' },
-  { id: 'cafe', label: '☕ Cafeteria', src: '/sounds/cafeteria.ogg' },
-  { id: 'transito', label: '🚗 Trânsito', src: '/sounds/transito.ogg' },
-  { id: 'vento', label: '🌬️ Vento uivante', src: '/sounds/vento.ogg' },
-  { id: 'ondas', label: '🌊 Ondas', src: '/sounds/ondas.ogg' },
-  { id: 'fogo', label: '🔥 Fogueira', src: '/sounds/fogueira.ogg' },
-  { id: 'gelo', label: '🧊 Gelo estalando', src: '/sounds/gelo.ogg' },
-];
 export const DEEPWORK_CHECKLIST = [
   'Desligar notificações do celular',
   'Fechar abas desnecessárias',
