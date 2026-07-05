@@ -4,10 +4,12 @@ import { useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { uid, rand } from '@/lib/engine';
 import { AMBIENT_SOUNDS, DEEPWORK_CHECKLIST } from '@/lib/constants';
+import { useReward, RewardBanner } from '@/components/RewardFeedback';
 
 export default function DeepWorkPage() {
   const deepwork = useStore((s) => s.deepwork);
   const setDeepwork = useStore((s) => s.setDeepwork);
+  const { msg, reward } = useReward();
   const acRef = useRef<AudioContext | null>(null);
   const nodesRef = useRef<Record<string, { src: AudioBufferSourceNode; gain: GainNode }>>({});
   const [active, setActive] = useState<Record<string, boolean>>({});
@@ -16,7 +18,11 @@ export default function DeepWorkPage() {
   const [mimg, setMimg] = useState('');
 
   const check = deepwork.checklist || [];
-  const toggleCheck = (i: number) => { const c = [...(deepwork.checklist || [])]; while (c.length < DEEPWORK_CHECKLIST.length) c.push(false); c[i] = !c[i]; setDeepwork({ ...deepwork, checklist: c }); };
+  const toggleCheck = (i: number) => {
+    const c = [...(deepwork.checklist || [])]; while (c.length < DEEPWORK_CHECKLIST.length) c.push(false);
+    c[i] = !c[i]; setDeepwork({ ...deepwork, checklist: c });
+    if (c[i] && c.every(Boolean)) reward('Ritual de foco completo 🚀', 10, { skill: 'gestao' });
+  };
   const feitos = check.filter(Boolean).length;
 
   const ensureAC = () => {
@@ -48,6 +54,7 @@ export default function DeepWorkPage() {
     <div className="max-w-3xl">
       <h1 className="text-xl font-black mb-1">🌑 Deep Work</h1>
       <p className="text-sm text-zinc-500 mb-4">Prepare o foco, ligue os sons e visualize seus objetivos.</p>
+      <RewardBanner msg={msg} />
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">

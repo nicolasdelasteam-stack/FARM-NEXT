@@ -5,10 +5,12 @@ import { useStore } from '@/lib/store';
 import { uid } from '@/lib/engine';
 import { WEEK_DAYS, LIVRO_TIPOS } from '@/lib/constants';
 import type { LivroStatus } from '@/lib/types';
+import { useReward, RewardBanner } from '@/components/RewardFeedback';
 
 export default function EstudosPage() {
   const estudos = useStore((s) => s.estudos);
   const setEstudos = useStore((s) => s.setEstudos);
+  const { msg, reward } = useReward();
   const [tab, setTab] = useState<'materias' | 'biblioteca'>('materias');
   const [open, setOpen] = useState(false);
   const [nome, setNome] = useState(''); const [emoji, setEmoji] = useState('📘'); const [dia, setDia] = useState(WEEK_DAYS[0]); const [hora, setHora] = useState('08:00'); const [prof, setProf] = useState('');
@@ -18,7 +20,12 @@ export default function EstudosPage() {
   const setResumo = (id: string, resumo: string) => setEstudos({ ...estudos, materias: estudos.materias.map((m) => m.id === id ? { ...m, resumo } : m) });
   const delMateria = (id: string) => setEstudos({ ...estudos, materias: estudos.materias.filter((m) => m.id !== id) });
   const addLivro = () => { if (!lTitulo.trim()) return; setEstudos({ ...estudos, biblioteca: [...estudos.biblioteca, { id: uid(), titulo: lTitulo.trim(), tipo: lTipo, link: lLink.trim(), status: 'quero_ler', progresso: 0 }] }); setLTitulo(''); setLLink(''); };
-  const updLivro = (id: string, patch: Partial<{ status: LivroStatus; progresso: number }>) => setEstudos({ ...estudos, biblioteca: estudos.biblioteca.map((l) => l.id === id ? { ...l, ...patch } : l) });
+  const updLivro = (id: string, patch: Partial<{ status: LivroStatus; progresso: number }>) => {
+    const antes = estudos.biblioteca.find((l) => l.id === id);
+    const marcouLido = patch.status === 'lido' && antes?.status !== 'lido';
+    setEstudos({ ...estudos, biblioteca: estudos.biblioteca.map((l) => l.id === id ? { ...l, ...patch, ...(marcouLido ? { progresso: 100 } : {}) } : l) });
+    if (marcouLido && antes) reward(`Livro lido: ${antes.titulo} 📚`, 30, { coins: 10, skill: 'estudos' });
+  };
   const delLivro = (id: string) => setEstudos({ ...estudos, biblioteca: estudos.biblioteca.filter((l) => l.id !== id) });
 
   const EMO = ['📘', '📗', '📕', '🧬', '💊', '🧪', '🧠', '🩺', '💻', '📐'];
@@ -30,6 +37,7 @@ export default function EstudosPage() {
     <div className="max-w-3xl">
       <h1 className="text-xl font-black mb-1">📚 Estudos</h1>
       <p className="text-sm text-zinc-500 mb-4">Matérias com horário e a sua Bibliotheca Alexandrina.</p>
+      <RewardBanner msg={msg} />
       <div className="flex gap-2 mb-5">
         {(['materias', 'biblioteca'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${tab === t ? 'bg-indigo-600 text-white' : 'bg-zinc-900 text-zinc-400'}`}>{t === 'materias' ? 'Matérias' : 'Bibliotheca'}</button>

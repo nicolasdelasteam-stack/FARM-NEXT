@@ -1,4 +1,4 @@
-import type { Player, Difficulty, Mission, Reward, Boss } from './types';
+import type { Player, Difficulty, Mission, Reward, Boss, Agua } from './types';
 import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, PET_STREAK_REQ } from './constants';
 
 // ─── Date helpers ───
@@ -11,18 +11,22 @@ export function today(): string {
   }
 }
 
+// 'YYYY-MM-DD' no fuso local — toISOString() é UTC e vira o dia mais cedo (ex.: 21h no Brasil).
+function ymdLocal(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export function dateSub(days: number): string {
   const d = new Date();
   d.setDate(d.getDate() - Math.abs(days));
-  return d.toISOString().slice(0, 10);
+  return ymdLocal(d);
 }
 
 export function getWeekStart(): string {
   const d = new Date();
   const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  d.setDate(diff);
-  return d.toISOString().slice(0, 10);
+  d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
+  return ymdLocal(d);
 }
 
 // Segunda-feira (chave da semana) a partir de um 'YYYY-MM-DD' local — tz-safe.
@@ -31,7 +35,7 @@ export function weekKey(dateStr: string): string {
   const d = new Date(y, m - 1, dd);
   const day = d.getDay();
   d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return ymdLocal(d);
 }
 
 // Boss recorrente (semanal/mensal) volta a aparecer quando muda o período em que foi derrotado.
@@ -253,6 +257,16 @@ export function applyDailyReset(
   return { player: p, missions: nextMissions, changed: true };
 }
 
+// Vira o dia da água: arquiva os copos do dia que terminou no histórico e zera o contador.
+export function applyAguaReset(agua: Agua, lastReset: string | null): Agua {
+  if (!lastReset || agua.copos <= 0) return { ...agua, copos: 0 };
+  return {
+    ...agua,
+    copos: 0,
+    historico: { ...agua.historico, [lastReset]: { copos: agua.copos, completou: agua.copos >= agua.meta } },
+  };
+}
+
 // ─── Loot box ───
 export function rollLootBox(): string | null {
   if (Math.random() >= 0.25) return null;
@@ -417,21 +431,18 @@ export function completeMission(mission: Mission): Mission {
   };
 }
 
-// Fluxo completo ao concluir uma missão: funde XP, moedas, atributo, contadores,
-// ofensiva/pet e o boss automático num só lugar (antes tudo isso ficava desligado).
-export function applyMissionComplete(
+// Recompensa por qualquer atividade de vida real (água, treino, leitura, casa...):
+// XP com cap diário, moedas, atributo, ofensiva/pet e boss automático — o mesmo
+// fluxo das missões, para toda aba do app alimentar o jogo.
+export function applyActivityReward(
   player: Player,
-  mission: Mission,
   settings: { maxDailyXp: number; dailyXpGoal: number },
+  reward: { xp: number; coins?: number; skill?: string },
 ): { player: Player; leveledUp: boolean; bossDefeated: boolean } {
   const beforeLevel = player.level;
-  const skill = typeof mission.skill === 'string' ? mission.skill : undefined;
-
-  let p = addXP(player, mission.reward.xp, settings, skill);
-  p = addCoins(p, mission.reward.coins);
-  if (skill) p = incrementAtributo(p, skill);
-  p.totalMissionsDone = (p.totalMissionsDone || 0) + 1;
-  if (mission.type === 'habit') p.totalHabitsDone = (p.totalHabitsDone || 0) + 1;
+  let p = addXP(player, reward.xp, settings, reward.skill);
+  if (reward.coins) p = addCoins(p, reward.coins);
+  if (reward.skill) p = incrementAtributo(p, reward.skill);
 
   // Ofensiva: ao bater a meta diária de XP, conta como dia ativo e evolui o pet.
   if (!p.metaBatidaHoje && (p.dailyXp || 0) >= (settings.dailyXpGoal || 100)) {
@@ -443,9 +454,23 @@ export function applyMissionComplete(
 
   // Boss automático: invoca um se não houver e causa dano igual ao XP ganho.
   if (!p.bossActive) p = spawnBoss(p);
-  const dmg = bossDamage(p, mission.reward.xp);
+  const dmg = bossDamage(p, reward.xp);
   p = dmg.player;
   if (dmg.defeated) p = addCoins(p, 50); // bônus por derrotar o chefe
 
   return { player: p, leveledUp: p.level > beforeLevel, bossDefeated: dmg.defeated };
+}
+
+// Fluxo completo ao concluir uma missão: recompensa padrão + contadores de missão.
+export function applyMissionComplete(
+  player: Player,
+  mission: Mission,
+  settings: { maxDailyXp: number; dailyXpGoal: number },
+): { player: Player; leveledUp: boolean; bossDefeated: boolean } {
+  const skill = typeof mission.skill === 'string' ? mission.skill : undefined;
+  const res = applyActivityReward(player, settings, { xp: mission.reward.xp, coins: mission.reward.coins, skill });
+  const p = { ...res.player };
+  p.totalMissionsDone = (p.totalMissionsDone || 0) + 1;
+  if (mission.type === 'habit') p.totalHabitsDone = (p.totalHabitsDone || 0) + 1;
+  return { player: p, leveledUp: res.leveledUp, bossDefeated: res.bossDefeated };
 }

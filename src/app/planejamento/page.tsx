@@ -3,17 +3,23 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { uid } from '@/lib/engine';
+import { useReward, RewardBanner } from '@/components/RewardFeedback';
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 export default function PlanejamentoPage() {
   const pl = useStore((s) => s.planejamento);
   const setPl = useStore((s) => s.setPlanejamento);
+  const { msg, reward } = useReward();
   const [meta, setMeta] = useState('');
   const [prio, setPrio] = useState('');
 
   const addMeta = () => { if (!meta.trim()) return; setPl({ ...pl, metas: [...pl.metas, { id: uid(), texto: meta.trim(), done: false }] }); setMeta(''); };
-  const toggleMeta = (id: string) => setPl({ ...pl, metas: pl.metas.map((m) => m.id === id ? { ...m, done: !m.done } : m) });
+  const toggleMeta = (id: string) => {
+    const m = pl.metas.find((x) => x.id === id);
+    setPl({ ...pl, metas: pl.metas.map((x) => x.id === id ? { ...x, done: !x.done } : x) });
+    if (m && !m.done) reward(`Meta do ano: ${m.texto} 🏆`, 50, { coins: 20, skill: 'gestao' });
+  };
   const delMeta = (id: string) => setPl({ ...pl, metas: pl.metas.filter((m) => m.id !== id) });
   const addPrio = () => { if (!prio.trim()) return; setPl({ ...pl, prioridades: [...pl.prioridades, prio.trim()] }); setPrio(''); };
   const delPrio = (idx: number) => setPl({ ...pl, prioridades: pl.prioridades.filter((_v, i) => i !== idx) });
@@ -29,6 +35,7 @@ export default function PlanejamentoPage() {
     <div className="max-w-3xl">
       <h1 className="text-xl font-black mb-1">🗓️ Planejamento {pl.ano}</h1>
       <p className="text-sm text-zinc-500 mb-4">Metas do ano, prioridades e sua disciplina mês a mês.</p>
+      <RewardBanner msg={msg} />
 
       <div className="grid md:grid-cols-2 gap-4 mb-4">
         <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">

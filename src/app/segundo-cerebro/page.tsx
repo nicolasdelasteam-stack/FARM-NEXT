@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { uid } from '@/lib/engine';
 import type { LivroStatus } from '@/lib/types';
+import { useReward, RewardBanner } from '@/components/RewardFeedback';
 
 const STATUS: Record<LivroStatus, { label: string; color: string }> = {
   quero_ler: { label: 'Quero ler', color: 'text-zinc-400' },
@@ -14,6 +15,7 @@ const STATUS: Record<LivroStatus, { label: string; color: string }> = {
 export default function SegundoCerebroPage() {
   const cerebro = useStore((s) => s.cerebro);
   const setCerebro = useStore((s) => s.setCerebro);
+  const { msg, reward } = useReward();
   const [tab, setTab] = useState<'livros' | 'habilidades' | 'ideias'>('livros');
 
   const inp = 'bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
@@ -29,8 +31,12 @@ export default function SegundoCerebroPage() {
     setCerebro({ ...cerebro, livros: [...cerebro.livros, { id: uid(), titulo: lTitulo.trim(), autor: lAutor.trim(), link: lLink.trim(), status: lStatus, progresso: 0 }] });
     setLTitulo(''); setLAutor(''); setLLink('');
   };
-  const setLivro = (id: string, patch: Partial<(typeof cerebro.livros)[number]>) =>
-    setCerebro({ ...cerebro, livros: cerebro.livros.map((l) => l.id === id ? { ...l, ...patch } : l) });
+  const setLivro = (id: string, patch: Partial<(typeof cerebro.livros)[number]>) => {
+    const antes = cerebro.livros.find((l) => l.id === id);
+    const marcouLido = patch.status === 'lido' && antes?.status !== 'lido';
+    setCerebro({ ...cerebro, livros: cerebro.livros.map((l) => l.id === id ? { ...l, ...patch, ...(marcouLido ? { progresso: 100 } : {}) } : l) });
+    if (marcouLido && antes) reward(`Livro lido: ${antes.titulo} 🧠`, 30, { coins: 10, skill: 'estudos' });
+  };
   const delLivro = (id: string) => setCerebro({ ...cerebro, livros: cerebro.livros.filter((l) => l.id !== id) });
 
   // ─── Habilidades ───
@@ -63,6 +69,7 @@ export default function SegundoCerebroPage() {
     <div className="max-w-3xl">
       <h1 className="text-xl font-black mb-1">🧠 Segundo Cérebro</h1>
       <p className="text-sm text-zinc-500 mb-4">Leitura livre, habilidades em estudo e banco de ideias. (Livros de matéria ficam em Estudos → Bibliotheca.)</p>
+      <RewardBanner msg={msg} />
 
       <div className="flex gap-2 mb-4">
         {(['livros', 'habilidades', 'ideias'] as const).map((t) => (

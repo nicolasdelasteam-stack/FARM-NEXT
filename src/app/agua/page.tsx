@@ -1,22 +1,31 @@
 'use client';
 
 import { useStore } from '@/lib/store';
+import { today } from '@/lib/engine';
+import { useReward, RewardBanner } from '@/components/RewardFeedback';
 
 export default function AguaPage() {
   const agua = useStore((s) => s.agua);
   const setAgua = useStore((s) => s.setAgua);
+  const { msg, reward } = useReward();
   const copos = agua.copos || 0;
   const meta = agua.meta || 8;
   const pct = Math.min(100, Math.round((copos / meta) * 100));
   const diasReg = Object.keys(agua.historico || {}).length;
 
   const addWater = (amount: number) => {
-    setAgua({ ...agua, copos: (agua.copos || 0) + amount });
+    const novo = copos + amount;
+    setAgua({ ...agua, copos: novo, historico: { ...agua.historico, [today()]: { copos: novo, completou: novo >= meta } } });
+    // XP só até a meta (sem farm de copos infinitos); bônus ao completar o dia.
+    const contam = Math.max(0, Math.min(novo, meta) - Math.min(copos, meta));
+    if (copos < meta && novo >= meta) reward('Meta de água batida 💧', contam * 2 + 15, { coins: 5, skill: 'saude' });
+    else if (contam > 0) reward('Hidratação', contam * 2, { skill: 'saude' });
   };
 
   return (
     <div className="max-w-2xl">
       <h1 className="text-xl font-black mb-4">💧 Água</h1>
+      <RewardBanner msg={msg} />
       <div className="grid grid-cols-2 gap-4">
         <div className="p-6 rounded-xl bg-zinc-900 border border-zinc-800 text-center">
           <div className="text-5xl mb-2">💧</div>

@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { canNotify, sendNotification } from '@/lib/notify';
-import { applyDailyReset, today } from '@/lib/engine';
+import { applyDailyReset, applyAguaReset, today } from '@/lib/engine';
 
 export default function Notifier() {
   const settings = useStore((s) => s.settings);
@@ -18,6 +18,9 @@ export default function Notifier() {
       if (res.changed) {
         s.setPlayer(res.player);
         s.setMissions(res.missions);
+        // Virada do dia também arquiva/zera a água e reabre o checklist de foco.
+        s.setAgua(applyAguaReset(s.agua, s.lastDailyReset));
+        s.setDeepwork({ ...s.deepwork, checklist: (s.deepwork.checklist || []).map(() => false) });
         s.setLastDailyReset(today());
       }
     };

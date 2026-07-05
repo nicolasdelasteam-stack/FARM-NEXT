@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { uid } from '@/lib/engine';
+import { useReward, RewardBanner } from '@/components/RewardFeedback';
 
 const FREQS = ['Diária', 'Semanal', 'Quinzenal', 'Mensal'];
 
 export default function CasaPage() {
   const casa = useStore((s) => s.casa);
   const setCasa = useStore((s) => s.setCasa);
+  const { msg, reward } = useReward();
   const [aNome, setANome] = useState(''); const [aEmoji, setAEmoji] = useState('🚗'); const [aObj, setAObj] = useState(''); const [aTar, setATar] = useState('');
   const [tNome, setTNome] = useState(''); const [tFreq, setTFreq] = useState('Semanal');
   const [lTexto, setLTexto] = useState('');
@@ -16,10 +18,18 @@ export default function CasaPage() {
   const addArea = () => { if (!aNome.trim()) return; setCasa({ ...casa, areas: [...casa.areas, { id: uid(), nome: aNome.trim(), emoji: aEmoji, objetivo: aObj.trim(), tarefa: aTar.trim() }] }); setANome(''); setAObj(''); setATar(''); };
   const delArea = (id: string) => setCasa({ ...casa, areas: casa.areas.filter((a) => a.id !== id) });
   const addTarefa = () => { if (!tNome.trim()) return; setCasa({ ...casa, tarefas: [...casa.tarefas, { id: uid(), nome: tNome.trim(), freq: tFreq, done: false }] }); setTNome(''); };
-  const toggleTarefa = (id: string) => setCasa({ ...casa, tarefas: casa.tarefas.map((t) => t.id === id ? { ...t, done: !t.done } : t) });
+  const toggleTarefa = (id: string) => {
+    const t = casa.tarefas.find((x) => x.id === id);
+    setCasa({ ...casa, tarefas: casa.tarefas.map((x) => x.id === id ? { ...x, done: !x.done } : x) });
+    if (t && !t.done) reward(t.nome, 10, { coins: 2, skill: 'gestao' });
+  };
   const delTarefa = (id: string) => setCasa({ ...casa, tarefas: casa.tarefas.filter((t) => t.id !== id) });
   const addLembrete = () => { if (!lTexto.trim()) return; setCasa({ ...casa, lembretes: [...casa.lembretes, { id: uid(), texto: lTexto.trim(), done: false }] }); setLTexto(''); };
-  const toggleLembrete = (id: string) => setCasa({ ...casa, lembretes: casa.lembretes.map((l) => l.id === id ? { ...l, done: !l.done } : l) });
+  const toggleLembrete = (id: string) => {
+    const l = casa.lembretes.find((x) => x.id === id);
+    setCasa({ ...casa, lembretes: casa.lembretes.map((x) => x.id === id ? { ...x, done: !x.done } : x) });
+    if (l && !l.done) reward(l.texto, 5, { skill: 'gestao' });
+  };
   const delLembrete = (id: string) => setCasa({ ...casa, lembretes: casa.lembretes.filter((l) => l.id !== id) });
 
   const EMO = ['🚗', '🐶', '🌱', '🏠', '🛋️', '🍽️', '🧹', '🪴', '🐱', '🧺'];
@@ -29,6 +39,7 @@ export default function CasaPage() {
     <div className="max-w-3xl">
       <h1 className="text-xl font-black mb-1">🏠 Organização da Casa</h1>
       <p className="text-sm text-zinc-500 mb-4">Áreas, tarefas recorrentes e lembretes do lar.</p>
+      <RewardBanner msg={msg} />
 
       <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 mb-4">
         <div className="text-sm font-bold mb-2">Áreas (carro, pets, plantas...)</div>

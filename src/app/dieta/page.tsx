@@ -4,10 +4,12 @@ import { useState, type ChangeEvent } from 'react';
 import { useStore } from '@/lib/store';
 import { uid, today } from '@/lib/engine';
 import { MEAL_TYPES, WEEK_DAYS } from '@/lib/constants';
+import { useReward, RewardBanner } from '@/components/RewardFeedback';
 
 export default function DietaPage() {
   const dieta = useStore((s) => s.dieta);
   const setDieta = useStore((s) => s.setDieta);
+  const { msg, reward } = useReward();
   const [tab, setTab] = useState<'refeicoes' | 'peso' | 'receitas'>('refeicoes');
   const [dia, setDia] = useState(WEEK_DAYS[0]);
   const [horario, setHorario] = useState('08:00');
@@ -30,8 +32,10 @@ export default function DietaPage() {
   const addPeso = () => {
     const p = parseFloat(peso);
     if (!p) return;
+    const jaHoje = dieta.pesos.some((x) => x.data === today());
     setDieta({ ...dieta, pesos: [...dieta.pesos, { id: uid(), data: today(), peso: p, gordura: gordura ? parseFloat(gordura) : null, foto: foto || undefined }] });
     setPeso(''); setGordura(''); setFoto('');
+    if (!jaHoje) reward('Pesagem registrada ⚖️', 10, { skill: 'saude' });
   };
   const onFoto = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
@@ -66,6 +70,7 @@ export default function DietaPage() {
     <div className="max-w-3xl">
       <h1 className="text-xl font-black mb-1">🥗 Dieta</h1>
       <p className="text-sm text-zinc-500 mb-4">Refeições da semana, progresso de peso e receitas.</p>
+      <RewardBanner msg={msg} />
       <div className="flex gap-2 mb-5">
         {(['refeicoes', 'peso', 'receitas'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}

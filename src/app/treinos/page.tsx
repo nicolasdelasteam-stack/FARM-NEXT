@@ -5,10 +5,12 @@ import { useStore } from '@/lib/store';
 import { uid, today } from '@/lib/engine';
 import { ACTIVITY_LEVELS, TREINO_OBJETIVOS, MUSCLE_GUIDE } from '@/lib/constants';
 import type { TreinoPerfil } from '@/lib/types';
+import { useReward, RewardBanner } from '@/components/RewardFeedback';
 
 export default function TreinosPage() {
   const treinos = useStore((s) => s.treinos);
   const setTreinos = useStore((s) => s.setTreinos);
+  const { msg, reward } = useReward();
   const [tab, setTab] = useState<'macros' | 'rotina' | 'guia'>('macros');
   const [novoGrupo, setNovoGrupo] = useState('Peito');
   const [novoPeso, setNovoPeso] = useState('');
@@ -30,7 +32,13 @@ export default function TreinosPage() {
     setTreinos({ ...treinos, rotinas: treinos.rotinas.map((r) => r.id === rid ? { ...r, exercicios: r.exercicios.map((e) => e.id === eid ? { ...e, ...patch } : e) } : r) });
   const delEx = (rid: string, eid: string) => setTreinos({ ...treinos, rotinas: treinos.rotinas.map((r) => r.id === rid ? { ...r, exercicios: r.exercicios.filter((e) => e.id !== eid) } : r) });
   const delGrupo = (rid: string) => setTreinos({ ...treinos, rotinas: treinos.rotinas.filter((r) => r.id !== rid) });
-  const addPeso = () => { const v = parseFloat(novoPeso); if (!v) return; setTreinos({ ...treinos, perfil: { ...p, peso: v }, logs: [...treinos.logs, { id: uid(), data: today(), peso: v }] }); setNovoPeso(''); };
+  const addPeso = () => {
+    const v = parseFloat(novoPeso); if (!v) return;
+    const jaHoje = treinos.logs.some((l) => l.data === today());
+    setTreinos({ ...treinos, perfil: { ...p, peso: v }, logs: [...treinos.logs, { id: uid(), data: today(), peso: v }] });
+    setNovoPeso('');
+    if (!jaHoje) reward('Peso registrado 💪', 10, { skill: 'saude' });
+  };
 
   const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
   const sm = 'bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm outline-none focus:border-indigo-500';
@@ -41,6 +49,7 @@ export default function TreinosPage() {
     <div className="max-w-3xl">
       <h1 className="text-xl font-black mb-1">💪 Meus Treinos</h1>
       <p className="text-sm text-zinc-500 mb-4">Macros calculados por fórmula, rotina e guia de grupos musculares.</p>
+      <RewardBanner msg={msg} />
       <div className="flex gap-2 mb-5">
         {(['macros', 'rotina', 'guia'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${tab === t ? 'bg-indigo-600 text-white' : 'bg-zinc-900 text-zinc-400'}`}>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { uid } from '@/lib/engine';
 import type { MidiaItem, MidiaGrupo, MidiaStatus } from '@/lib/types';
+import { useReward, RewardBanner } from '@/components/RewardFeedback';
 
 const GRUPO: Record<MidiaGrupo, { label: string; icon: string }> = {
   filme: { label: 'Filme', icon: '🎬' },
@@ -22,6 +23,7 @@ type Filtro = 'todos' | MidiaGrupo | 'favoritos' | 'assistindo' | 'assistido';
 export default function MidiaPage() {
   const midia = useStore((s) => s.midia);
   const setMidia = useStore((s) => s.setMidia);
+  const { msg, reward } = useReward();
   const [filtro, setFiltro] = useState<Filtro>('todos');
   const [open, setOpen] = useState(false);
 
@@ -43,8 +45,12 @@ export default function MidiaPage() {
     setMidia([...midia, item]);
     setTitulo(''); setTemporadas('1'); setOpen(false);
   };
-  const patch = (id: string, p: Partial<MidiaItem>) =>
+  const patch = (id: string, p: Partial<MidiaItem>) => {
+    const antes = midia.find((m) => m.id === id);
+    const concluiu = p.status === 'assistido' && antes?.status !== 'assistido';
     setMidia(midia.map((m) => m.id === id ? { ...m, ...p } : m));
+    if (concluiu && antes) reward(`Concluiu: ${antes.titulo} 🍿`, 10);
+  };
   const del = (id: string) => setMidia(midia.filter((m) => m.id !== id));
 
   const FILTROS: { key: Filtro; label: string }[] = [
@@ -71,6 +77,7 @@ export default function MidiaPage() {
         <button onClick={() => setOpen(!open)} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold">{open ? 'Fechar' : '+ Adicionar'}</button>
       </div>
       <p className="text-sm text-zinc-500 mb-4">Filmes, séries e animes — avaliação, status e progresso de temporadas.</p>
+      <RewardBanner msg={msg} />
 
       {open && (
         <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 mb-5">
