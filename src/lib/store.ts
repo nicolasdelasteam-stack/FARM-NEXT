@@ -278,6 +278,9 @@ export const useStore = create<AppState>()(
           market,
         } as AppState;
       },
+      // lastBossDefeat é UI transitória — não persiste (senão a tela de vitória
+      // reapareceria a cada reload).
+      partialize: (s) => { const rest = { ...s } as Partial<AppState>; delete rest.lastBossDefeat; return rest as AppState; },
     }
   )
 );

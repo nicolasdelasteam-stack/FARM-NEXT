@@ -34,7 +34,6 @@ async function shareBossCard(info: BossDefeatInfo) {
   ctx.fillStyle = grad; ctx.font = '900 72px system-ui';
   ctx.fillText('VITÓRIA!', 540, 230);
 
-  // Ícone do boss (imagem enviada ou emoji)
   if (isImg(info.icon)) {
     try {
       const img = new Image();
@@ -46,14 +45,12 @@ async function shareBossCard(info: BossDefeatInfo) {
   } else {
     ctx.font = '190px system-ui'; ctx.fillText(info.icon || '👹', 540, 500);
   }
-  // "X" de derrotado
   ctx.strokeStyle = 'rgba(239,68,68,0.85)'; ctx.lineWidth = 14; ctx.lineCap = 'round';
   ctx.beginPath(); ctx.moveTo(450, 340); ctx.lineTo(630, 520); ctx.moveTo(630, 340); ctx.lineTo(450, 520); ctx.stroke();
 
   ctx.fillStyle = '#f4f4f5'; ctx.font = '900 58px system-ui';
   ctx.fillText(info.nome, 540, 640);
 
-  // Chips de recompensa
   const chips = [`🪙 +${info.coins}`, `⭐ +${info.xp} XP`, ...(info.recompensa ? [`🎁 ${info.recompensa}`] : [])];
   ctx.font = '600 40px system-ui';
   const gap = 40;
@@ -86,26 +83,21 @@ async function shareBossCard(info: BossDefeatInfo) {
   URL.revokeObjectURL(url);
 }
 
-// Celebração global (o "juice" do jogo): confete + banner ao subir de nível,
-// garantir a ofensiva e — com destaque — ao derrotar um boss (nomeando-o).
+// Celebração global. A tela de BOSS é lida direto do store (lastBossDefeat) —
+// assim aparece para QUALQUER derrota que marque esse campo, sem depender de
+// timing de subscribe. Some só quando o usuário fecha.
 export default function Celebration() {
+  const bossDefeat = useStore((s) => s.lastBossDefeat);
+  const setLastBossDefeat = useStore((s) => s.setLastBossDefeat);
   const [popup, setPopup] = useState<Popup | null>(null);
-  const [bossCele, setBossCele] = useState<BossDefeatInfo | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mountedAt = useRef(0);
 
+  // Nível / ofensiva vêm de mudanças no player (não são um campo dedicado).
   useEffect(() => {
     mountedAt.current = Date.now();
     const unsub = useStore.subscribe((state, prev) => {
-      if (Date.now() - mountedAt.current < 1500) return; // ignora a reidratação
-      // Boss derrotado (auto ou manual) → animação dedicada, nomeando o chefe.
-      if (state.lastBossDefeat && state.lastBossDefeat !== prev.lastBossDefeat) {
-        const info = state.lastBossDefeat;
-        play('boss');
-        setBossCele(info);
-        useStore.getState().setLastBossDefeat(null); // consome (não repete no reload)
-        return;
-      }
+      if (Date.now() - mountedAt.current < 1500) return;
       const p = state.player, q = prev.player;
       if (p.level > q.level) {
         play('levelup');
@@ -118,13 +110,19 @@ export default function Celebration() {
     return unsub;
   }, []);
 
-  // Confete (compartilhado por popup e boss) — dura mais na celebração de boss.
-  // A tela de boss NÃO fecha sozinha: só sai no clique do usuário (fechar/backdrop).
+  // Popup pequeno some sozinho.
   useEffect(() => {
-    if (!popup && !bossCele) return;
-    const isBoss = !!bossCele;
+    if (!popup) return;
+    const t = setTimeout(() => setPopup(null), 2600);
+    return () => clearTimeout(t);
+  }, [popup]);
+
+  // Confete + som. A tela de boss NÃO fecha sozinha (só no clique).
+  useEffect(() => {
+    if (!popup && !bossDefeat) return;
+    const isBoss = !!bossDefeat;
+    if (isBoss) play('boss');
     const dur = isBoss ? 4200 : 2600;
-    const timer = isBoss ? null : setTimeout(() => setPopup(null), dur);
 
     const canvas = canvasRef.current;
     let raf = 0;
@@ -161,37 +159,37 @@ export default function Celebration() {
       };
       raf = requestAnimationFrame(frame);
     }
-    return () => { if (timer) clearTimeout(timer); cancelAnimationFrame(raf); };
-  }, [popup, bossCele]);
+    return () => { cancelAnimationFrame(raf); };
+  }, [popup, bossDefeat]);
 
-  if (!popup && !bossCele) return null;
+  if (!popup && !bossDefeat) return null;
 
-  // ─── Celebração de BOSS (destaque, tela cheia, compartilhável) ───
-  if (bossCele) {
+  // ─── Celebração de BOSS (destaque, tela cheia, compartilhável, fica até fechar) ───
+  if (bossDefeat) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm cursor-pointer" onClick={() => setBossCele(null)}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm cursor-pointer" onClick={() => setLastBossDefeat(null)}>
         <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
         <div className="animate-zenite-pop relative w-[min(92vw,26rem)] px-7 py-7 rounded-3xl border-2 border-amber-500/50 bg-gradient-to-b from-[#1a0b12] to-[#0b0a12] text-center shadow-[0_0_80px_rgba(239,68,68,0.4)]" onClick={(e) => e.stopPropagation()}>
           <div className="text-[11px] tracking-[0.35em] text-red-400 uppercase mb-2">⚔ Boss Derrotado ⚔</div>
           <div className="relative inline-block my-1">
-            {isImg(bossCele.icon)
+            {isImg(bossDefeat.icon)
               // eslint-disable-next-line @next/next/no-img-element -- ícone do boss é data-URL/URL livre
-              ? <img src={bossCele.icon} alt="" className="w-24 h-24 object-cover rounded-2xl mx-auto grayscale-[0.3]" />
-              : <div className="text-7xl leading-none animate-bounce">{bossCele.icon}</div>}
+              ? <img src={bossDefeat.icon} alt="" className="w-24 h-24 object-cover rounded-2xl mx-auto grayscale-[0.3]" />
+              : <div className="text-7xl leading-none animate-bounce">{bossDefeat.icon}</div>}
             <span className="absolute inset-0 flex items-center justify-center text-6xl text-red-500/80 font-black select-none">✗</span>
           </div>
           <div className="text-3xl font-black mt-2 bg-gradient-to-r from-amber-300 via-orange-300 to-red-400 bg-clip-text text-transparent">VITÓRIA!</div>
-          <div className="text-lg font-bold text-zinc-100 mt-1">{bossCele.nome}</div>
+          <div className="text-lg font-bold text-zinc-100 mt-1">{bossDefeat.nome}</div>
           <div className="flex flex-wrap gap-2 justify-center mt-4">
-            {bossCele.coins > 0 && <span className="px-3 py-1 rounded-lg bg-yellow-900/40 border border-yellow-700/50 text-yellow-300 text-sm font-bold">🪙 +{bossCele.coins}</span>}
-            {bossCele.xp > 0 && <span className="px-3 py-1 rounded-lg bg-indigo-900/40 border border-indigo-700/50 text-indigo-200 text-sm font-bold">⭐ +{bossCele.xp} XP</span>}
-            {bossCele.recompensa && <span className="px-3 py-1 rounded-lg bg-pink-900/30 border border-pink-700/40 text-pink-200 text-sm font-bold">🎁 {bossCele.recompensa}</span>}
+            {bossDefeat.coins > 0 && <span className="px-3 py-1 rounded-lg bg-yellow-900/40 border border-yellow-700/50 text-yellow-300 text-sm font-bold">🪙 +{bossDefeat.coins}</span>}
+            {bossDefeat.xp > 0 && <span className="px-3 py-1 rounded-lg bg-indigo-900/40 border border-indigo-700/50 text-indigo-200 text-sm font-bold">⭐ +{bossDefeat.xp} XP</span>}
+            {bossDefeat.recompensa && <span className="px-3 py-1 rounded-lg bg-pink-900/30 border border-pink-700/40 text-pink-200 text-sm font-bold">🎁 {bossDefeat.recompensa}</span>}
           </div>
           <div className="flex gap-2 mt-5">
-            <button onClick={() => shareBossCard(bossCele)} className="flex-1 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-red-500 hover:brightness-110 text-sm font-bold text-black">📸 Compartilhar vitória</button>
-            <button onClick={() => setBossCele(null)} className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-sm font-semibold">Fechar</button>
+            <button onClick={() => shareBossCard(bossDefeat)} className="flex-1 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-red-500 hover:brightness-110 text-sm font-bold text-black">📸 Compartilhar vitória</button>
+            <button onClick={() => setLastBossDefeat(null)} className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-sm font-semibold">Fechar</button>
           </div>
-          {bossCele.recompensa && <p className="text-[11px] text-zinc-500 mt-2">🎁 no inventário — use em Eventos → Inventário</p>}
+          {bossDefeat.recompensa && <p className="text-[11px] text-zinc-500 mt-2">🎁 no inventário — use em Eventos → Inventário</p>}
         </div>
       </div>
     );
