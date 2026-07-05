@@ -6,7 +6,7 @@ import type {
   FinancasState, BossState, CerebroState, Nota, MidiaItem, BossDefeatInfo,
 } from './types';
 import { DEFAULT_PLAYER, DEFAULT_SETTINGS, INITIAL_MARKET, DEFAULT_HALL, DEFAULT_BOSSES } from './constants';
-import { weekKey, today, refreshBosses, applyBossPenalties, computeBossMetrics, checkBossAutoDefeats, weekMissoesOf, uid } from './engine';
+import { weekKey, today, refreshBosses, applyBossPenalties, computeBossMetrics, checkBossAutoDefeats, weekMissoesOf, applyMissionComplete, activeEventMods, uid } from './engine';
 
 const YEAR = new Date().getFullYear();
 
@@ -72,6 +72,9 @@ export interface AppState {
   // Roda os bosses (renasce recorrentes, penaliza prazos, derrota os que cumpriram
   // o requisito nas abas). Retorna o que aconteceu para as notificações.
   runBossChecks: () => { defeated: BossDefeatInfo[]; penalized: string[] };
+  // Conclui uma missão com o fluxo COMPLETO (recompensa + evento + ofensiva/pet +
+  // boss automático + celebração), usado por Campo, Dashboard e Provas.
+  concludeMission: (id: string) => { ok: boolean; jaPremiada?: boolean; leveledUp?: boolean; bossDefeated?: boolean; xp?: number; coins?: number; title?: string };
   setSettings: (settings: Settings) => void;
   setRoute: (route: string) => void;
   setView: (view: string) => void;
@@ -157,6 +160,8 @@ export const useStore = create<AppState>()(
           casaTarefas: s.casa.tarefas || [],
           transacoes: s.financas.transacoes || [],
           weekMissoes: weekMissoesOf(s.weekStats),
+          missions: s.missions,
+          history: s.missionHistory,
         });
         const auto = checkBossAutoDefeats(pen.player, pen.bosses, s.settings, metrics);
         if (ref.changed || pen.changed || auto.defeated.length > 0) {
@@ -171,6 +176,23 @@ export const useStore = create<AppState>()(
           });
         }
         return { defeated: auto.defeated, penalized: pen.penalized };
+      },
+      concludeMission: (id) => {
+        const s = get();
+        const m = s.missions.find((x) => x.id === id);
+        if (!m || m.done) return { ok: false };
+        const t = today();
+        // Anti-farm: missão única paga 1x na vida; diária/hábito 1x por dia.
+        const jaPremiada = m.type === 'mission' ? !!m.rewardedOn : m.rewardedOn === t;
+        set({ missions: s.missions.map((x) => x.id === id ? { ...x, done: true, completedAt: new Date().toISOString(), ...(jaPremiada ? {} : { rewardedOn: t }) } : x) });
+        if (jaPremiada) return { ok: true, jaPremiada: true, title: m.title };
+        const res = applyMissionComplete(s.player, m, s.settings, activeEventMods(s.eventos));
+        set({ player: res.player });
+        // Boss automático do dashboard derrotado → celebração nomeando-o.
+        if (res.bossDefeated) set({ lastBossDefeat: { nome: res.player.bossName || 'Chefe', icon: res.player.bossIcon || '👹', coins: 50, xp: 0 } });
+        get().bumpWeekMissao();   // alimenta o boss "missões da semana"
+        get().runBossChecks();    // pode derrotar um boss (estudos/provas/etc.) na hora
+        return { ok: true, leveledUp: res.leveledUp, bossDefeated: res.bossDefeated, xp: m.reward.xp, coins: m.reward.coins, title: m.title };
       },
       setSettings: (settings) => set({ settings }),
       setRoute: (route) => set({ route }),

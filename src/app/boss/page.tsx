@@ -30,12 +30,14 @@ export default function BossPage() {
   const casa = useStore((s) => s.casa);
   const financas = useStore((s) => s.financas);
   const weekStats = useStore((s) => s.weekStats);
+  const missions = useStore((s) => s.missions);
+  const missionHistory = useStore((s) => s.missionHistory);
 
   // Métricas reais das abas para o progresso automático dos bosses.
   const metrics = computeBossMetrics({
     player, treinosLogs: treinos.logs || [], aguaHist: agua.historico || {},
     casaTarefas: casa.tarefas || [], transacoes: financas.transacoes || [],
-    weekMissoes: weekMissoesOf(weekStats),
+    weekMissoes: weekMissoesOf(weekStats), missions, history: missionHistory,
   });
 
   const [tab, setTab] = useState<'ativos' | 'bestiario'>('ativos');
@@ -218,10 +220,12 @@ export default function BossPage() {
                 {b.recompensa && <p>🎁 <b className="text-zinc-300">Recompensa:</b> {b.recompensa}</p>}
               </div>
 
-              {/* Progresso automático — enche sozinho conforme você usa as abas */}
-              {!b.derrotado && b.auto && (() => {
+              {/* Progresso automático (enche sozinho pelas abas) ou aviso de manual */}
+              {!b.derrotado && (() => {
                 const prog = bossAutoProgress(b, metrics);
-                if (!prog) return null;
+                if (!prog) return (
+                  <p className="mt-2 text-[10px] text-zinc-600">🖐️ Derrota manual — clique em <b>Derrotar</b> quando cumprir o requisito.</p>
+                );
                 const pct = Math.min(100, Math.round((prog.have / prog.need) * 100));
                 const bin = prog.need === 1; // casa/finanças = sim/não
                 return (

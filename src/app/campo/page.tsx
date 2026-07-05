@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { createMission, applyMissionComplete, activeEventMods, today } from '@/lib/engine';
+import { createMission, today } from '@/lib/engine';
 import { play } from '@/lib/sound';
 import { DIFFICULTIES, SKILL_NAMES } from '@/lib/constants';
 import type { Difficulty, MissionType } from '@/lib/types';
@@ -12,9 +12,7 @@ export default function CampoPage() {
   const addMission = useStore((s) => s.addMission);
   const updateMission = useStore((s) => s.updateMission);
   const removeMission = useStore((s) => s.removeMission);
-  const player = useStore((s) => s.player);
-  const setPlayer = useStore((s) => s.setPlayer);
-  const settings = useStore((s) => s.settings);
+  const concludeMission = useStore((s) => s.concludeMission);
 
   const [filter, setFilter] = useState<string>('all');
   const [showForm, setShowForm] = useState(false);
@@ -41,24 +39,16 @@ export default function CampoPage() {
   };
 
   const concluir = (id: string) => {
-    const m = missions.find((x) => x.id === id);
-    if (!m || m.done) return;
-    // Anti-farm: missão única paga 1x na vida; diária/hábito paga 1x por dia.
-    const jaPremiada = m.type === 'mission' ? !!m.rewardedOn : m.rewardedOn === todayStr;
-    updateMission(id, { done: true, completedAt: new Date().toISOString(), ...(jaPremiada ? {} : { rewardedOn: todayStr }) });
-    if (jaPremiada) { play('check'); flash(`${m.title}: concluída ✓ (recompensa já recebida)`); return; }
-    const res = applyMissionComplete(player, m, settings, activeEventMods(useStore.getState().eventos));
-    setPlayer(res.player);
-    // Boss automático do dashboard derrotado → anima a celebração nomeando-o.
-    if (res.bossDefeated) useStore.getState().setLastBossDefeat({ nome: res.player.bossName || 'Chefe', icon: res.player.bossIcon || '👹', coins: 50, xp: 0 });
-    useStore.getState().bumpWeekMissao();   // alimenta o boss "missões da semana"
-    useStore.getState().runBossChecks();    // pode derrotar um boss na hora
-    if (!res.leveledUp && !res.bossDefeated) play('check');
-    const extras = [`+${m.reward.xp} XP`, m.reward.coins ? `+${m.reward.coins} 🪙` : '']
-      .concat(res.leveledUp ? [`🎉 Subiu para o nível ${res.player.level}!`] : [])
-      .concat(res.bossDefeated ? ['⚔️ Boss derrotado! +50 🪙'] : [])
+    // Fluxo completo centralizado no store (recompensa, ofensiva, bosses, celebração).
+    const r = concludeMission(id);
+    if (!r.ok) return;
+    if (r.jaPremiada) { play('check'); flash(`${r.title}: concluída ✓ (recompensa já recebida)`); return; }
+    if (!r.leveledUp && !r.bossDefeated) play('check');
+    const extras = [`+${r.xp} XP`, r.coins ? `+${r.coins} 🪙` : '']
+      .concat(r.leveledUp ? ['🎉 Subiu de nível!'] : [])
+      .concat(r.bossDefeated ? ['⚔️ Boss derrotado! +50 🪙'] : [])
       .filter(Boolean);
-    flash(`${m.title}: ${extras.join(' · ')}`);
+    flash(`${r.title}: ${extras.join(' · ')}`);
   };
 
   const reabrir = (id: string) => updateMission(id, { done: false, completedAt: null });

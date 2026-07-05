@@ -3,19 +3,34 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { createMission, daysUntil } from '@/lib/engine';
+import { play } from '@/lib/sound';
 
 export default function ProvasPage() {
   const missions = useStore((s) => s.missions);
   const addMission = useStore((s) => s.addMission);
   const updateMission = useStore((s) => s.updateMission);
   const removeMission = useStore((s) => s.removeMission);
+  const concludeMission = useStore((s) => s.concludeMission);
   const [titulo, setTitulo] = useState('');
   const [data, setData] = useState('');
+  const [msg, setMsg] = useState('');
+  const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 3500); };
 
   const add = () => {
     if (!titulo.trim() || !data) return;
     addMission(createMission({ title: titulo.trim(), difficulty: 'media', type: 'mission', dueDate: data, skill: 'estudos' }));
     setTitulo(''); setData('');
+  };
+
+  // Concluir uma prova agora passa pelo motor do jogo (XP, contador semanal,
+  // bosses de estudo/provas). Desmarcar apenas reabre, sem repagar recompensa.
+  const toggle = (id: string, done: boolean) => {
+    if (done) { updateMission(id, { done: false, completedAt: null }); return; }
+    const r = concludeMission(id);
+    if (!r.ok) return;
+    play('check');
+    if (r.jaPremiada) { flash(`${r.title}: concluída ✓ (recompensa já recebida)`); return; }
+    flash(`${r.title}: +${r.xp} XP${r.coins ? ` · +${r.coins} 🪙` : ''}${r.leveledUp ? ` · 🎉 Nível!` : ''}`);
   };
   const provas = missions.filter((m) => m.dueDate).sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
   const daysTo = (d: string) => daysUntil(d);
@@ -24,7 +39,8 @@ export default function ProvasPage() {
   return (
     <div className="max-w-2xl">
       <h1 className="text-xl font-black mb-1">📆 Provas & Prazos</h1>
-      <p className="text-sm text-zinc-500 mb-4">Trabalhos e provas com data — vira uma missão no Campo automaticamente.</p>
+      <p className="text-sm text-zinc-500 mb-4">Trabalhos e provas com data — vira uma missão no Campo automaticamente. Concluir dá XP e enfraquece os chefes de estudo.</p>
+      {msg && <div className="mb-4 p-2 rounded-lg bg-indigo-950/50 border border-indigo-800/50 text-sm text-indigo-200 text-center">{msg}</div>}
 
       <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 mb-5">
         <div className="flex gap-2">
@@ -44,7 +60,7 @@ export default function ProvasPage() {
             : { t: `${dl} dia(s)`, c: 'bg-zinc-800 text-zinc-300' };
           return (
             <div key={m.id} className={`flex items-center gap-3 p-3 rounded-xl bg-zinc-900 border border-zinc-800 ${m.done ? 'opacity-60' : ''}`}>
-              <button onClick={() => updateMission(m.id, { done: !m.done, completedAt: m.done ? null : new Date().toISOString() })}
+              <button onClick={() => toggle(m.id, m.done)}
                 className={`w-5 h-5 rounded border shrink-0 ${m.done ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'}`} />
               <div className="flex-1 min-w-0">
                 <div className={`text-sm font-medium ${m.done ? 'line-through' : ''}`}>{m.title}</div>

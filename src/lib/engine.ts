@@ -86,6 +86,8 @@ export interface BossMetrics {
   missoesSemana: number;      // missões concluídas nesta semana
   streak: number;
   focoTotal: number;
+  provasMes: number;          // provas/entregas (missão com prazo) concluídas no mês
+  estudosSemana: number;      // missões de estudo concluídas nesta semana
 }
 
 // Missões concluídas na semana atual, a partir do contador persistente do store
@@ -103,6 +105,8 @@ export function computeBossMetrics(d: {
   casaTarefas: { done: boolean }[];
   transacoes: { tipo: string; valor: number; data: string }[];
   weekMissoes: number;
+  missions: Mission[];
+  history: Mission[];
 }): BossMetrics {
   const wk = weekKey(today());
   const mes = today().slice(0, 7);
@@ -111,6 +115,11 @@ export function computeBossMetrics(d: {
   const casaZerada = d.casaTarefas.length > 0 && d.casaTarefas.every((t) => t.done);
   const saldo = d.transacoes.filter((t) => t.data?.slice(0, 7) === mes)
     .reduce((s, t) => s + (t.tipo === 'receita' ? t.valor : -t.valor), 0);
+  // Provas/entregas (missão com prazo) e missões de estudo são missões únicas —
+  // ficam em missions (no dia) ou em history (arquivadas na virada), com completedAt.
+  const todas = [...d.missions, ...d.history];
+  const provasMes = todas.filter((m) => m.dueDate && m.done && m.completedAt && m.completedAt.slice(0, 7) === mes).length;
+  const estudosSemana = todas.filter((m) => m.skill === 'estudos' && m.done && m.completedAt && weekKey(m.completedAt.slice(0, 10)) === wk).length;
   return {
     treinosSemana,
     aguaSemana,
@@ -119,6 +128,8 @@ export function computeBossMetrics(d: {
     missoesSemana: d.weekMissoes,
     streak: Math.max(d.player.streak || 0, 0),
     focoTotal: d.player.totalFocusMinutes || 0,
+    provasMes,
+    estudosSemana,
   };
 }
 
@@ -138,6 +149,8 @@ export function bossAutoProgress(boss: Boss, m: BossMetrics): { have: number; ne
     case 'missoes_semana': return { have: m.missoesSemana, need: auto.valor };
     case 'streak': return { have: m.streak, need: auto.valor };
     case 'foco_total': return { have: m.focoTotal, need: auto.valor };
+    case 'provas_mes': return { have: m.provasMes, need: auto.valor };
+    case 'estudos_semana': return { have: m.estudosSemana, need: auto.valor };
     case 'casa_zerada': return { have: m.casaZerada ? 1 : 0, need: 1 };
     case 'financas_mes': return { have: m.financasMesPositivo ? 1 : 0, need: 1 };
   }

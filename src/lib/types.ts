@@ -207,7 +207,7 @@ export interface FinancasState { transacoes: Transacao[]; metas: MetaFinanceira[
 export type BossDificuldade = 'facil' | 'media' | 'dificil' | 'epico';
 export type BossPeriodo = 'semanal' | 'mensal' | 'unico';
 // Requisito automático: o boss se derrota sozinho quando a métrica real da aba bate o alvo.
-export type BossAutoTipo = 'treinos_semana' | 'agua_semana' | 'casa_zerada' | 'financas_mes' | 'missoes_semana' | 'streak' | 'foco_total';
+export type BossAutoTipo = 'treinos_semana' | 'agua_semana' | 'casa_zerada' | 'financas_mes' | 'missoes_semana' | 'streak' | 'foco_total' | 'provas_mes' | 'estudos_semana';
 export interface Boss {
   id: string;
   nome: string;

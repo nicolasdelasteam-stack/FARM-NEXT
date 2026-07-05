@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { PET_STAGES } from '@/lib/constants';
-import { revivePlayer, applyMissionComplete, activeEventMods, activeEvents, getPetIcon, today, nowMs } from '@/lib/engine';
+import { revivePlayer, activeEvents, getPetIcon, today, nowMs } from '@/lib/engine';
 import { useReward, RewardBanner } from '@/components/RewardFeedback';
 import ShareProgressButton from '@/components/ShareCard';
 import { play } from '@/lib/sound';
@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const agua = useStore((s) => s.agua);
   const setAgua = useStore((s) => s.setAgua);
   const setPlayer = useStore((s) => s.setPlayer);
-  const updateMission = useStore((s) => s.updateMission);
+  const concludeMission = useStore((s) => s.concludeMission);
   const [msg, setMsg] = useState('');
   const { msg: rmsg, reward } = useReward();
 
@@ -67,19 +67,12 @@ export default function DashboardPage() {
 
   const pendentes = missions.filter((m) => !m.done).slice(0, 6);
   const concluir = (id: string) => {
-    const m = missions.find((x) => x.id === id);
-    if (!m || m.done) return;
-    // Anti-farm: missão única paga 1x na vida; diária/hábito paga 1x por dia.
-    const jaPremiada = m.type === 'mission' ? !!m.rewardedOn : m.rewardedOn === todayStr;
-    updateMission(id, { done: true, completedAt: new Date().toISOString(), ...(jaPremiada ? {} : { rewardedOn: todayStr }) });
-    if (jaPremiada) { play('check'); flash(`${m.title}: concluída ✓ (recompensa já recebida)`); return; }
-    const res = applyMissionComplete(player, m, settings, activeEventMods(useStore.getState().eventos));
-    setPlayer(res.player);
-    if (res.bossDefeated) useStore.getState().setLastBossDefeat({ nome: res.player.bossName || 'Chefe', icon: res.player.bossIcon || '👹', coins: 50, xp: 0 });
-    useStore.getState().bumpWeekMissao();   // alimenta o boss "missões da semana"
-    useStore.getState().runBossChecks();    // pode derrotar um boss na hora
-    if (!res.leveledUp && !res.bossDefeated) play('check');
-    flash(`${m.title}: +${m.reward.xp} XP${m.reward.coins ? ` · +${m.reward.coins} 🪙` : ''}${res.leveledUp ? ` · 🎉 Nível ${res.player.level}!` : ''}`);
+    // Fluxo completo centralizado no store (recompensa, ofensiva, bosses, celebração).
+    const r = concludeMission(id);
+    if (!r.ok) return;
+    if (r.jaPremiada) { play('check'); flash(`${r.title}: concluída ✓ (recompensa já recebida)`); return; }
+    if (!r.leveledUp && !r.bossDefeated) play('check');
+    flash(`${r.title}: +${r.xp} XP${r.coins ? ` · +${r.coins} 🪙` : ''}${r.leveledUp ? ' · 🎉 Nível!' : ''}${r.bossDefeated ? ' · ⚔️ Boss!' : ''}`);
   };
 
   if (player.gameOver) {
