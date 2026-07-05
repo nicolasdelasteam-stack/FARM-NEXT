@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { canNotify, sendNotification } from '@/lib/notify';
-import { applyDailyReset, applyAguaReset, checkHallUnlocks, spawnAutoEvents, refreshBosses, applyBossPenalties, computeBossMetrics, checkBossAutoDefeats, weekMissoesOf, uid, today } from '@/lib/engine';
+import { applyDailyReset, applyAguaReset, checkHallUnlocks, spawnAutoEvents, today } from '@/lib/engine';
 
 export default function Notifier() {
   const settings = useStore((s) => s.settings);
@@ -43,33 +43,12 @@ export default function Notifier() {
         ev.novos.forEach((n) => sendNotification('🎉 Novo evento!', `"${n}" começou — veja em Eventos!`));
       }
 
-      // Bosses no automático (antes só rodava ao abrir a aba Boss):
-      // 1) recorrentes renascem quando o período vira; 2) prazo vencido aplica penalidade;
-      // 3) requisito cumprido nas abas (treinos, água, casa, finanças, missões) → derrota sozinho.
-      const fresh = useStore.getState();
-      const ref = refreshBosses(fresh.boss.bosses);
-      const pen = applyBossPenalties(fresh.player, ref.bosses, fresh.settings);
-      const metrics = computeBossMetrics({
-        player: pen.player,
-        treinosLogs: fresh.treinos.logs || [],
-        aguaHist: fresh.agua.historico || {},
-        casaTarefas: fresh.casa.tarefas || [],
-        transacoes: fresh.financas.transacoes || [],
-        weekMissoes: weekMissoesOf(fresh.weekStats),
-      });
-      const auto = checkBossAutoDefeats(pen.player, pen.bosses, fresh.settings, metrics);
-      if (ref.changed || pen.changed || auto.defeated.length > 0) {
-        fresh.setPlayer(auto.player);
-        fresh.setBoss({ ...fresh.boss, bosses: auto.bosses });
-        if (auto.invItems.length > 0) {
-          fresh.setEventos({
-            ...fresh.eventos,
-            inventario: [...fresh.eventos.inventario, ...auto.invItems.map((it) => ({ id: uid(), nome: it.nome, icon: '🎁', origem: it.origem, usado: false, efeito: it.efeito }))],
-          });
-        }
-        pen.penalized.forEach((n) => sendNotification('☠️ Boss não derrotado', `"${n}" venceu o prazo — você tomou a penalidade.`));
-        auto.defeated.forEach((n) => sendNotification('⚔️ Boss derrotado automaticamente!', `Você cumpriu o requisito de "${n}". Recompensa no inventário!`));
-      }
+      // Bosses no automático (renasce recorrentes, penaliza prazos vencidos e
+      // derrota os que cumpriram o requisito nas abas). A animação em tela é
+      // disparada pela própria ação (via lastBossDefeat → Celebration).
+      const r = useStore.getState().runBossChecks();
+      r.penalized.forEach((n) => sendNotification('☠️ Boss não derrotado', `"${n}" venceu o prazo — você tomou a penalidade.`));
+      r.defeated.forEach((d) => sendNotification('⚔️ Boss derrotado!', `Você venceu "${d.nome}"! 🪙 +${d.coins} · ⭐ +${d.xp} XP${d.recompensa ? ` · 🎁 ${d.recompensa}` : ''}`));
     };
     check();
     const id = setInterval(check, 60000);

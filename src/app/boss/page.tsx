@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
-import { uid, today, addCoins, addXP, refreshBosses, applyBossPenalties, computeBossMetrics, checkBossAutoDefeats, bossAutoProgress, weekMissoesOf } from '@/lib/engine';
-import { play } from '@/lib/sound';
+import { uid, today, addCoins, addXP, computeBossMetrics, bossAutoProgress, weekMissoesOf } from '@/lib/engine';
 import { BOSS_DIFICULDADE, BOSS_PERIODO, REWARD_ITEMS } from '@/lib/constants';
 import type { Boss } from '@/lib/types';
 
@@ -25,6 +24,7 @@ export default function BossPage() {
   const settings = useStore((s) => s.settings);
   const eventos = useStore((s) => s.eventos);
   const setEventos = useStore((s) => s.setEventos);
+  const setLastBossDefeat = useStore((s) => s.setLastBossDefeat);
   const treinos = useStore((s) => s.treinos);
   const agua = useStore((s) => s.agua);
   const casa = useStore((s) => s.casa);
@@ -51,32 +51,10 @@ export default function BossPage() {
   const inp = 'w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500';
   const EMO = ['👿', '🌀', '🌑', '📱', '🔥', '🛋️', '🍩', '💀', '🐉', '👹', '🧟', '⚰️', '👺', '🦑', '🕷️', '🐍', '🦂', '🩸'];
 
-  // Ao abrir: recorrentes renascem, penalidade por prazo vencido e derrota
-  // automática dos que já cumpriram o requisito nas abas (feedback instantâneo;
-  // o Notifier faz o mesmo em segundo plano mesmo sem abrir esta aba).
-  useEffect(() => {
-    const s = useStore.getState();
-    const r = refreshBosses(s.boss.bosses);
-    const pen = applyBossPenalties(s.player, r.bosses, s.settings);
-    const m = computeBossMetrics({
-      player: pen.player, treinosLogs: s.treinos.logs || [], aguaHist: s.agua.historico || {},
-      casaTarefas: s.casa.tarefas || [], transacoes: s.financas.transacoes || [],
-      weekMissoes: weekMissoesOf(s.weekStats),
-    });
-    const auto = checkBossAutoDefeats(pen.player, pen.bosses, s.settings, m);
-    if (r.changed || pen.changed || auto.defeated.length > 0) {
-      setPlayer(auto.player);
-      setBoss({ ...s.boss, bosses: auto.bosses });
-      if (auto.invItems.length > 0) {
-        setEventos({ ...s.eventos, inventario: [...s.eventos.inventario, ...auto.invItems.map((it) => ({ id: uid(), nome: it.nome, icon: '🎁', origem: it.origem, usado: false, efeito: it.efeito }))] });
-      }
-      if (auto.defeated.length > 0) {
-        // Fora do corpo síncrono do efeito (regra react-hooks/set-state-in-effect).
-        setTimeout(() => { play('boss'); flash(`⚔️ Derrotado automaticamente: ${auto.defeated.join(', ')}! Recompensa no inventário.`); }, 0);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Ao abrir: renasce recorrentes, penaliza prazos vencidos e derrota os que já
+  // cumpriram o requisito nas abas — a animação em tela é disparada pela ação.
+  // (O Notifier faz o mesmo em segundo plano mesmo sem abrir esta aba.)
+  useEffect(() => { useStore.getState().runBossChecks(); }, []);
 
   const onImg = (file?: File) => {
     if (!file) return;
@@ -103,7 +81,6 @@ export default function BossPage() {
   const derrotar = (id: string) => {
     const b = boss.bosses.find((x) => x.id === id);
     if (!b || b.derrotado) return;
-    play('boss');
     let p = player;
     if (b.recompensaCoins > 0) p = addCoins(p, b.recompensaCoins);
     if (b.recompensaXp > 0) p = addXP(p, b.recompensaXp, settings);
@@ -114,7 +91,8 @@ export default function BossPage() {
     if (b.recompensa) {
       setEventos({ ...eventos, inventario: [...eventos.inventario, { id: uid(), nome: b.recompensa, icon: '🎁', origem: `Boss: ${b.nome}`, usado: false, efeito: b.recompensaEfeito }] });
     }
-    flash(`⚔️ ${b.nome} derrotado! 🪙 +${b.recompensaCoins} · ⭐ +${b.recompensaXp} XP${b.recompensa ? ` · 🎁 "${b.recompensa}" no inventário` : ''}`);
+    // Dispara a animação de celebração em tela (nomeia o boss + recompensas).
+    setLastBossDefeat({ nome: b.nome, icon: b.icon, coins: b.recompensaCoins || 0, xp: b.recompensaXp || 0, recompensa: b.recompensa || undefined });
   };
   const reviver = (id: string) =>
     setBoss({ ...boss, bosses: boss.bosses.map((x) => x.id === id ? { ...x, derrotado: false, penalizado: false, data: null } : x) });

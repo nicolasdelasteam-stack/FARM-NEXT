@@ -230,6 +230,8 @@ export interface Boss {
   auto?: { tipo: BossAutoTipo; valor: number };  // se presente, derrota automática ao cumprir
 }
 export interface BossState { bosses: Boss[]; }
+// Dados da última derrota de boss — alimentam a animação de celebração em tela.
+export interface BossDefeatInfo { nome: string; icon: string; coins: number; xp: number; recompensa?: string; }
 
 // ─── FARM-NEXT extras (Segundo Cérebro) ───
 // Livros de leitura livre / que "fortalecem o cérebro" (os livros de matéria ficam em Estudos → Bibliotheca).

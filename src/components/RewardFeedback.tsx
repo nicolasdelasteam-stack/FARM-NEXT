@@ -21,6 +21,8 @@ export function useReward() {
     s.setPlayer(res.player);
     // Nível/boss têm fanfarra própria na Celebration — aqui só o "ding" de XP.
     if (!res.leveledUp && !res.bossDefeated) play('ding');
+    // Toda ação de vida real pode ter cumprido o requisito de um boss — checa na hora.
+    s.runBossChecks();
     const xpFinal = Math.max(0, Math.round(xp * mods.xpMult));
     const coinsFinal = Math.round((opts?.coins || 0) * mods.coinsMult);
     const extras = [

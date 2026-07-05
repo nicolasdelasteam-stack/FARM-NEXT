@@ -3,10 +3,10 @@ import { persist } from 'zustand/middleware';
 import type {
   Player, Mission, Settings, DietaState, ComprasState, EventosState, Trofeu, Companion,
   TreinosState, DeepWorkState, Viagem, PlanejamentoState, CasaState, EstudosState,
-  FinancasState, BossState, CerebroState, Nota, MidiaItem,
+  FinancasState, BossState, CerebroState, Nota, MidiaItem, BossDefeatInfo,
 } from './types';
 import { DEFAULT_PLAYER, DEFAULT_SETTINGS, INITIAL_MARKET, DEFAULT_HALL, DEFAULT_BOSSES } from './constants';
-import { weekKey, today } from './engine';
+import { weekKey, today, refreshBosses, applyBossPenalties, computeBossMetrics, checkBossAutoDefeats, weekMissoesOf, uid } from './engine';
 
 const YEAR = new Date().getFullYear();
 
@@ -33,6 +33,7 @@ export interface AppState {
   missions: Mission[];
   missionHistory: Mission[];
   weekStats: { week: string; missoes: number }; // contador semanal (boss "missões da semana")
+  lastBossDefeat: BossDefeatInfo | null;         // alimenta a animação de celebração
   settings: Settings;
   market: typeof INITIAL_MARKET;
   agua: { copos: number; meta: number; historico: Record<string, { copos: number; completou: boolean }> };
@@ -67,6 +68,10 @@ export interface AppState {
   setMissions: (missions: Mission[]) => void;
   setMissionHistory: (missionHistory: Mission[]) => void;
   bumpWeekMissao: () => void;
+  setLastBossDefeat: (info: BossDefeatInfo | null) => void;
+  // Roda os bosses (renasce recorrentes, penaliza prazos, derrota os que cumpriram
+  // o requisito nas abas). Retorna o que aconteceu para as notificações.
+  runBossChecks: () => { defeated: BossDefeatInfo[]; penalized: string[] };
   setSettings: (settings: Settings) => void;
   setRoute: (route: string) => void;
   setView: (view: string) => void;
@@ -98,11 +103,12 @@ export interface AppState {
 
 export const useStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       player: { ...DEFAULT_PLAYER },
       missions: [],
       missionHistory: [],
       weekStats: { week: '', missoes: 0 },
+      lastBossDefeat: null,
       settings: { ...DEFAULT_SETTINGS },
       market: { ...INITIAL_MARKET, purchases: [] },
       agua: { copos: 0, meta: 8, historico: {} },
@@ -139,6 +145,33 @@ export const useStore = create<AppState>()(
         const atual = s.weekStats.week === wk ? s.weekStats.missoes : 0;
         return { weekStats: { week: wk, missoes: atual + 1 } };
       }),
+      setLastBossDefeat: (lastBossDefeat) => set({ lastBossDefeat }),
+      runBossChecks: () => {
+        const s = get();
+        const ref = refreshBosses(s.boss.bosses);
+        const pen = applyBossPenalties(s.player, ref.bosses, s.settings);
+        const metrics = computeBossMetrics({
+          player: pen.player,
+          treinosLogs: s.treinos.logs || [],
+          aguaHist: s.agua.historico || {},
+          casaTarefas: s.casa.tarefas || [],
+          transacoes: s.financas.transacoes || [],
+          weekMissoes: weekMissoesOf(s.weekStats),
+        });
+        const auto = checkBossAutoDefeats(pen.player, pen.bosses, s.settings, metrics);
+        if (ref.changed || pen.changed || auto.defeated.length > 0) {
+          set({
+            player: auto.player,
+            boss: { ...s.boss, bosses: auto.bosses },
+            eventos: auto.invItems.length > 0
+              ? { ...s.eventos, inventario: [...s.eventos.inventario, ...auto.invItems.map((it) => ({ id: uid(), nome: it.nome, icon: '🎁', origem: it.origem, usado: false, efeito: it.efeito }))] }
+              : s.eventos,
+            // A última derrota dispara a animação de celebração (Celebration.tsx).
+            ...(auto.defeated.length > 0 ? { lastBossDefeat: auto.defeated[auto.defeated.length - 1] } : {}),
+          });
+        }
+        return { defeated: auto.defeated, penalized: pen.penalized };
+      },
       setSettings: (settings) => set({ settings }),
       setRoute: (route) => set({ route }),
       setView: (view) => set({ view }),
@@ -202,6 +235,7 @@ export const useStore = create<AppState>()(
           missions,
           missionHistory: p.missionHistory || [],
           weekStats: p.weekStats || { week: '', missoes: 0 },
+          lastBossDefeat: null,
           dieta: p.dieta || D.dieta(),
           compras: p.compras || D.compras(),
           eventos: p.eventos || D.eventos(),

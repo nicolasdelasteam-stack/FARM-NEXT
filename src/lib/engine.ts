@@ -1,5 +1,5 @@
-import type { Player, Difficulty, Mission, Reward, Boss, Agua, Trofeu, EventosState, Pet } from './types';
-import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, PET_STREAK_REQ, PET_SPECIES, RANDOM_EVENT_POOL, SEASONAL_EVENTS, type EventoTemplate } from './constants';
+import type { Player, Difficulty, Mission, Reward, Boss, Agua, Trofeu, EventosState, Pet, BossDefeatInfo, BossAutoTipo } from './types';
+import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, DEFAULT_BOSSES, PET_STREAK_REQ, PET_SPECIES, RANDOM_EVENT_POOL, SEASONAL_EVENTS, type EventoTemplate } from './constants';
 
 // ─── Date helpers ───
 export function today(): string {
@@ -122,15 +122,22 @@ export function computeBossMetrics(d: {
   };
 }
 
+// Requisito automático do boss: usa o do próprio boss OU, se faltar (dados
+// antigos sem migração), recupera do padrão pelo id — deixa o auto à prova de falhas.
+export function resolveBossAuto(boss: Boss): { tipo: BossAutoTipo; valor: number } | undefined {
+  return boss.auto || DEFAULT_BOSSES.find((d) => d.id === boss.id)?.auto;
+}
+
 // Valor atual vs. alvo de um boss automático (para barra de progresso e checagem).
 export function bossAutoProgress(boss: Boss, m: BossMetrics): { have: number; need: number } | null {
-  if (!boss.auto) return null;
-  switch (boss.auto.tipo) {
-    case 'treinos_semana': return { have: m.treinosSemana, need: boss.auto.valor };
-    case 'agua_semana': return { have: m.aguaSemana, need: boss.auto.valor };
-    case 'missoes_semana': return { have: m.missoesSemana, need: boss.auto.valor };
-    case 'streak': return { have: m.streak, need: boss.auto.valor };
-    case 'foco_total': return { have: m.focoTotal, need: boss.auto.valor };
+  const auto = resolveBossAuto(boss);
+  if (!auto) return null;
+  switch (auto.tipo) {
+    case 'treinos_semana': return { have: m.treinosSemana, need: auto.valor };
+    case 'agua_semana': return { have: m.aguaSemana, need: auto.valor };
+    case 'missoes_semana': return { have: m.missoesSemana, need: auto.valor };
+    case 'streak': return { have: m.streak, need: auto.valor };
+    case 'foco_total': return { have: m.focoTotal, need: auto.valor };
     case 'casa_zerada': return { have: m.casaZerada ? 1 : 0, need: 1 };
     case 'financas_mes': return { have: m.financasMesPositivo ? 1 : 0, need: 1 };
   }
@@ -148,18 +155,18 @@ export function checkBossAutoDefeats(
   bosses: Boss[],
   settings: { maxDailyXp: number; dailyXpGoal: number },
   m: BossMetrics,
-): { player: Player; bosses: Boss[]; invItems: { nome: string; efeito?: string; origem: string }[]; defeated: string[] } {
+): { player: Player; bosses: Boss[]; invItems: { nome: string; efeito?: string; origem: string }[]; defeated: BossDefeatInfo[] } {
   let p = player;
   let changed = false;
   const invItems: { nome: string; efeito?: string; origem: string }[] = [];
-  const defeated: string[] = [];
+  const defeated: BossDefeatInfo[] = [];
   const next = bosses.map((b) => {
-    if (b.auto && !b.derrotado && bossAutoMet(b, m)) {
+    if (resolveBossAuto(b) && !b.derrotado && bossAutoMet(b, m)) {
       if (b.recompensaCoins > 0) p = addCoins(p, b.recompensaCoins);
       if (b.recompensaXp > 0) p = addXP(p, b.recompensaXp, settings);
       p = { ...p, bossDefeated: (p.bossDefeated || 0) + 1 };
       if (b.recompensa) invItems.push({ nome: b.recompensa, efeito: b.recompensaEfeito, origem: `Boss: ${b.nome}` });
-      defeated.push(b.nome);
+      defeated.push({ nome: b.nome, icon: b.icon, coins: b.recompensaCoins || 0, xp: b.recompensaXp || 0, recompensa: b.recompensa || undefined });
       changed = true;
       return { ...b, derrotado: true, data: today() };
     }

@@ -75,7 +75,9 @@ export default function DashboardPage() {
     if (jaPremiada) { play('check'); flash(`${m.title}: concluída ✓ (recompensa já recebida)`); return; }
     const res = applyMissionComplete(player, m, settings, activeEventMods(useStore.getState().eventos));
     setPlayer(res.player);
-    useStore.getState().bumpWeekMissao(); // alimenta o boss "missões da semana"
+    if (res.bossDefeated) useStore.getState().setLastBossDefeat({ nome: res.player.bossName || 'Chefe', icon: res.player.bossIcon || '👹', coins: 50, xp: 0 });
+    useStore.getState().bumpWeekMissao();   // alimenta o boss "missões da semana"
+    useStore.getState().runBossChecks();    // pode derrotar um boss na hora
     if (!res.leveledUp && !res.bossDefeated) play('check');
     flash(`${m.title}: +${m.reward.xp} XP${m.reward.coins ? ` · +${m.reward.coins} 🪙` : ''}${res.leveledUp ? ` · 🎉 Nível ${res.player.level}!` : ''}`);
   };
