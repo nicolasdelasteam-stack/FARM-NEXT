@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { PET_STAGES } from '@/lib/constants';
 import { revivePlayer, applyMissionComplete, today } from '@/lib/engine';
+import { useReward, RewardBanner } from '@/components/RewardFeedback';
+import ShareProgressButton from '@/components/ShareCard';
 
 const MILESTONES = [
   { d: 1, label: 'Primeiro dia', icon: '🚩' },
@@ -35,6 +37,7 @@ export default function DashboardPage() {
   const setPlayer = useStore((s) => s.setPlayer);
   const updateMission = useStore((s) => s.updateMission);
   const [msg, setMsg] = useState('');
+  const { msg: rmsg, reward } = useReward();
 
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 3000); };
   const todayStr = today();
@@ -48,7 +51,14 @@ export default function DashboardPage() {
   const copos = agua.copos || 0;
   const metaAgua = agua.meta || 8;
   const aguaPct = Math.min(100, Math.round((copos / metaAgua) * 100));
-  const addWater = (n: number) => setAgua({ ...agua, copos: Math.max(0, copos + n) });
+  // Mesmo fluxo recompensado da página Água (antes o atalho daqui não dava XP nem gravava histórico).
+  const addWater = (n: number) => {
+    const novo = Math.max(0, copos + n);
+    setAgua({ ...agua, copos: novo, historico: { ...agua.historico, [todayStr]: { copos: novo, completou: novo >= metaAgua } } });
+    const contam = Math.max(0, Math.min(novo, metaAgua) - Math.min(copos, metaAgua));
+    if (n > 0 && copos < metaAgua && novo >= metaAgua) reward('Meta de água batida 💧', contam * 2 + 15, { coins: 5, skill: 'saude' });
+    else if (n > 0 && contam > 0) reward('Hidratação', contam * 2, { skill: 'saude' });
+  };
 
   const reviveCost = 30 + (player.deaths || 0) * 10;
   const revive = () => { const p = revivePlayer(player); if (p) setPlayer(p); };
@@ -86,7 +96,12 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-xl font-black">⚡ Hoje</h1>
+        <ShareProgressButton />
+      </div>
       {msg && <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-800/50 text-sm text-indigo-200 text-center">{msg}</div>}
+      <RewardBanner msg={rmsg} />
 
       {hpPct <= 25 && hpPct > 0 && (
         <div className="p-3 rounded-lg bg-red-900/20 border border-red-800/30 text-red-400 font-semibold text-sm animate-pulse">
@@ -146,9 +161,12 @@ export default function DashboardPage() {
           <h3 className="font-bold text-sm mb-2">🎯 Meta Diária de XP</h3>
           <div className="text-2xl font-black mb-1">{player.dailyXp || 0}<span className="text-sm font-normal text-zinc-500">/{settings.dailyXpGoal}</span></div>
           <div className="h-2 rounded-full bg-zinc-800 overflow-hidden mb-2">
-            <div className="h-full bg-yellow-500 rounded-full transition-all" style={{ width: `${dailyPct}%` }} />
+            <div className={`h-full rounded-full transition-all ${player.metaBatidaHoje ? 'bg-orange-500' : 'bg-yellow-500'}`} style={{ width: `${dailyPct}%` }} />
           </div>
-          {petStage > 0 && <p className="text-xs text-zinc-500">🐾 {PET_STAGES[petStage]?.icon} {PET_STAGES[petStage]?.name}</p>}
+          <p className={`text-xs ${player.metaBatidaHoje ? 'text-orange-400 font-semibold' : 'text-zinc-500'}`}>
+            {player.metaBatidaHoje ? '🔥 Ofensiva garantida hoje!' : '🔥 Bata a meta para somar +1 dia de ofensiva'}
+          </p>
+          {petStage > 0 && <p className="text-xs text-zinc-500 mt-1">🐾 {PET_STAGES[petStage]?.icon} {PET_STAGES[petStage]?.name}</p>}
         </div>
 
         {/* Água */}

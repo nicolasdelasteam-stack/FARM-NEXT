@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Sidebar from '@/components/Sidebar';
 import Notifier from '@/components/Notifier';
+import Celebration from '@/components/Celebration';
+import Onboarding from '@/components/Onboarding';
 
 export const metadata: Metadata = {
   title: 'ZÊNITE — Produtividade Gamificada',
@@ -18,6 +20,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Notifier />
+        <Celebration />
+        <Onboarding />
       </body>
     </html>
   );
