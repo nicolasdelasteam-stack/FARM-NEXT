@@ -110,13 +110,13 @@ export interface EventoTemplate {
 export const RANDOM_EVENT_POOL: EventoTemplate[] = [
   // Importados do Notion
   { nome: 'Uma invasão de chefões surgiu!', icon: '🏴‍☠️', descricao: '⚔️ Bosses por todo lado! XP aumentado enquanto durar — derrote todos os bosses ativos para o resgate.', dur: 6, recompensa: 'Vale Poder do Chefe', efeito: 'golpe_boss', coins: 60, mod: { xpMult: 1.5 } },
-  { nome: 'Terminar rápido é a chave', icon: '⏳', descricao: '🏃 Quem hesita, perde: conclua as tarefas do dia em menos de 24h. XP 1.5x durante o evento.', dur: 3, recompensa: 'Skip de 1 Tarefa', coins: 40, mod: { xpMult: 1.5 } },
-  { nome: 'Maratona do Atraso Dobrado', icon: '🔥', descricao: '💥 Tudo em dobro: todas as atividades dão 2x XP. Zere as pendências dentro do prazo para o resgate.', dur: 2, recompensa: 'Vale Day Free', coins: 50, mod: { xpMult: 2 } },
+  { nome: 'Terminar rápido é a chave', icon: '⏳', descricao: '🏃 Quem hesita, perde: conclua as tarefas do dia em menos de 24h. XP 1.5x durante o evento.', dur: 3, recompensa: 'Skip de 1 Tarefa', efeito: 'skip_tarefa', coins: 40, mod: { xpMult: 1.5 } },
+  { nome: 'Maratona do Atraso Dobrado', icon: '🔥', descricao: '💥 Tudo em dobro: todas as atividades dão 2x XP. Zere as pendências dentro do prazo para o resgate.', dur: 2, recompensa: 'Vale Day Free', efeito: 'day_free', coins: 50, mod: { xpMult: 2 } },
   { nome: 'O Grande Festival', icon: '🎭', descricao: '🎊 Festival das missões: XP triplicado! Conclua 5 missões durante o festival para o resgate.', dur: 6, recompensa: 'Vale Loot de Evento', efeito: 'roleta', coins: 50, mod: { xpMult: 3 } },
-  { nome: 'Missão Sobrevivência', icon: '🪖', descricao: '🎖️ Modo guerra: 2x XP em todas as atividades. Conclua pelo menos 10 tarefas para o resgate.', dur: 4, recompensa: 'Vale Buff de Energia', efeito: 'heal_full', coins: 40, mod: { xpMult: 2 } },
+  { nome: 'Missão Sobrevivência', icon: '🪖', descricao: '🎖️ Modo guerra: 2x XP em todas as atividades. Conclua pelo menos 10 tarefas para o resgate.', dur: 4, recompensa: 'Vale Buff de Energia', efeito: 'buff_energia', coins: 40, mod: { xpMult: 2 } },
   { nome: 'Um surto de XP na sua realidade!', icon: '🏃', descricao: '⚡ Anomalia detectada: 3x XP em TUDO. Aproveite antes que o Sistema se estabilize.', dur: 2, recompensa: 'Vale Bônus Ultra', efeito: 'xp2x_24h', coins: 30, mod: { xpMult: 3 } },
   { nome: 'Semana da Preguiça', icon: '📉', descricao: '🦥 ÔNUS: o Sistema está sonolento — todo XP reduzido pela metade. Sobreviva à semana e resgate o item misterioso.', dur: 6, recompensa: 'Baú Sombrio', efeito: 'bau_sombrio', coins: 20, mod: { xpMult: 0.5 } },
-  { nome: 'Modo Fim de Ano', icon: '🎇', descricao: '🎅 Reta final: 2x XP em tudo. Termine 70% das pendências para o resgate.', dur: 6, recompensa: 'Vale Queima de Estoque', efeito: 'coins_100', coins: 60, mod: { xpMult: 2 } },
+  { nome: 'Modo Fim de Ano', icon: '🎇', descricao: '🎅 Reta final: 2x XP em tudo. Termine 70% das pendências para o resgate.', dur: 6, recompensa: 'Vale Queima de Estoque', efeito: 'queima_estoque', coins: 60, mod: { xpMult: 2 } },
   // Novos
   { nome: 'Chuva de Moedas', icon: '🪙', descricao: '💰 O céu está chovendo ouro: moedas em DOBRO em tudo que você fizer.', dur: 3, recompensa: 'Baú de Moedas', efeito: 'coins_50', coins: 30, mod: { coinsMult: 2 } },
   { nome: 'Lua Cheia do Foco', icon: '🌕', descricao: '🐺 A lua amplifica sua concentração: 1.5x XP. Faça 3 sessões na Caverna para o resgate.', dur: 2, recompensa: 'Poção do Dobro de XP', efeito: 'xp2x', coins: 30, mod: { xpMult: 1.5 } },
@@ -126,9 +126,9 @@ export const RANDOM_EVENT_POOL: EventoTemplate[] = [
   { nome: 'Seca de Moedas', icon: '🏜️', descricao: '🥵 ÔNUS: a economia secou — moedas pela metade. Quem atravessar o deserto ganha o tesouro.', dur: 3, recompensa: 'Baú Grande de Moedas', efeito: 'coins_100', coins: 0, mod: { coinsMult: 0.5 } },
   { nome: 'Roleta do Destino', icon: '🎰', descricao: '🎲 A sorte gira: complete suas diárias todos os dias do evento e rode a Roda da Fortuna.', dur: 2, recompensa: 'Roda da Fortuna', efeito: 'roleta', coins: 25, mod: { xpMult: 1.25 } },
   { nome: 'Semana do Escudo', icon: '🛡️', descricao: '❄️ Forje sua proteção: mantenha a ofensiva todos os dias e ganhe um escudo para ela.', dur: 5, recompensa: 'Escudo de Ofensiva', efeito: 'freeze', coins: 40, mod: { xpMult: 1.25 } },
-  { nome: 'Eclipse do Sistema', icon: '🔮', descricao: '🌑 ÔNUS: eclipse total — XP cai pela metade por 1 dia. Um item raríssimo cai para quem jogar mesmo assim.', dur: 1, recompensa: 'Chave Mística', efeito: 'coins_100', coins: 50, mod: { xpMult: 0.5 } },
+  { nome: 'Eclipse do Sistema', icon: '🔮', descricao: '🌑 ÔNUS: eclipse total — XP cai pela metade por 1 dia. Um item raríssimo cai para quem jogar mesmo assim.', dur: 1, recompensa: 'Chave Mística', efeito: 'chave_mistica', coins: 50, mod: { xpMult: 0.5 } },
   { nome: 'Caçada ao Dragão', icon: '🐲', descricao: '🏹 Temporada de caça: derrote 2 bosses durante o evento. XP +25% enquanto durar.', dur: 5, recompensa: 'Vale Poder do Chefe', efeito: 'golpe_boss', coins: 60, mod: { xpMult: 1.25 } },
-  { nome: 'Queima de Estoque', icon: '📦', descricao: '🏷️ Moedas rendem mais: +50% de moedas. Dia perfeito para farmar e gastar no Mercado.', dur: 3, recompensa: 'Vale Queima de Estoque', efeito: 'coins_50', coins: 30, mod: { coinsMult: 1.5 } },
+  { nome: 'Queima de Estoque', icon: '📦', descricao: '🏷️ Moedas rendem mais: +50% de moedas. Dia perfeito para farmar e gastar no Mercado.', dur: 3, recompensa: 'Vale Queima de Estoque', efeito: 'queima_estoque', coins: 30, mod: { coinsMult: 1.5 } },
   { nome: 'Festival da Renovação', icon: '🌱', descricao: '🍃 Novo ciclo: 2x XP. Termine o evento com a casa e as diárias em dia para renascer com HP cheio.', dur: 4, recompensa: 'Elixir da Vida', efeito: 'heal_full', coins: 40, mod: { xpMult: 2 } },
   { nome: 'Descontrole de XP', icon: '🧨', descricao: '💥 Um bug no Sistema triplicou o XP! Ninguém sabe quando vão corrigir.', dur: 2, recompensa: 'Vale Bônus Ultra', efeito: 'xp2x_24h', coins: 25, mod: { xpMult: 3 } },
   { nome: 'Vigília Silenciosa', icon: '🕯️', descricao: '🤫 Dois dias de silêncio profundo: 2x XP. Faça pelo menos 1 sessão de foco por dia do evento.', dur: 2, recompensa: 'Poção do Dobro de XP', efeito: 'xp2x', coins: 35, mod: { xpMult: 2 } },
@@ -171,6 +171,12 @@ export const REWARD_ITEMS: { id: string; nome: string; icon: string; efeito: str
   { id: 'bau_sombrio', nome: 'Baú Sombrio', icon: '🖤', efeito: 'bau_sombrio', desc: 'Recompensa misteriosa (sorte ou azar...)' },
   { id: 'roleta', nome: 'Roda da Fortuna', icon: '🎡', efeito: 'roleta', desc: 'Gira e ganha um prêmio aleatório' },
   { id: 'golpe_boss', nome: 'Vale Poder do Chefe', icon: '⚔️', efeito: 'golpe_boss', desc: 'Golpe devastador de 150 no boss atual' },
+  { id: 'chave_mistica', nome: 'Chave Mística', icon: '🗝️', efeito: 'chave_mistica', desc: 'Abre o Cofre: +150 🪙, 2x XP 24h e escudo de ofensiva' },
+  { id: 'day_free', nome: 'Vale Day Free', icon: '🌴', efeito: 'day_free', desc: 'Dia de folga: HP cheio + ofensiva protegida' },
+  { id: 'buff_energia', nome: 'Vale Buff de Energia', icon: '🔋', efeito: 'buff_energia', desc: 'HP cheio + 2x XP por 1h' },
+  { id: 'skip_tarefa', nome: 'Skip de 1 Tarefa', icon: '⏭️', efeito: 'skip_tarefa', desc: 'Conclui uma missão pendente de graça' },
+  { id: 'queima_estoque', nome: 'Vale Queima de Estoque', icon: '🏷️', efeito: 'queima_estoque', desc: '+120 moedas' },
+  { id: 'abobora', nome: 'Vale Abóbora Secreta', icon: '🎃', efeito: 'abobora', desc: 'Doce ou travessura — surpresa de Halloween' },
 ];
 
 export const PET_STAGES = [

@@ -59,6 +59,15 @@ export default function EventosPage() {
     const it = eventos.inventario.find((i) => i.id === id);
     if (!it || it.usado) return;
     play('ding');
+    // Skip de 1 Tarefa: conclui a 1ª missão pendente de graça (com toda a recompensa).
+    if (it.efeito === 'skip_tarefa') {
+      const pend = useStore.getState().missions.find((m) => !m.done);
+      if (!pend) { flash('⏭️ Nenhuma missão pendente para pular agora.'); return; }
+      const r = useStore.getState().concludeMission(pend.id);
+      setEventos({ ...eventos, inventario: eventos.inventario.map((i) => i.id === id ? { ...i, usado: true } : i) });
+      flash(`⏭️ "${r.title}" concluída de graça! +${r.xp || 0} XP${r.coins ? ` · +${r.coins} 🪙` : ''}`);
+      return;
+    }
     const res = applyItemEffect(player, it.efeito);
     setPlayer(res.player);
     setEventos({ ...eventos, inventario: eventos.inventario.map((i) => i.id === id ? { ...i, usado: true } : i) });

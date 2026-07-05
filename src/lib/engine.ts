@@ -308,7 +308,39 @@ export function applyItemEffect(player: Player, efeito: string | undefined): { p
       if (dmg.defeated) { p = addCoins(p, 50); return { player: p, msg: '⚔️ GOLPE FATAL! Boss derrotado (+50 🪙)' }; }
       return { player: p, msg: '⚔️ Golpe devastador: -150 de HP no boss!' };
     }
-    default: return { player: p, msg: 'Item usado ✓' };
+    case 'chave_mistica': {
+      // Jackpot do Sistema: moedas + dobro de XP por 24h + escudo de ofensiva.
+      p = addCoins(p, 150);
+      p = { ...p, xpBoostUntil: Date.now() + 24 * 3600 * 1000, streakFreeze: (p.streakFreeze || 0) + 1 };
+      return { player: p, msg: '🗝️ A Chave Mística abriu o Cofre do Sistema! +150 🪙 · 2x XP por 24h · ofensiva protegida ❄️' };
+    }
+    case 'day_free': {
+      // Dia de folga: descanse sem perder progresso — HP cheio + ofensiva protegida.
+      p = healHp(p, p.maxHp);
+      p = { ...p, streakFreeze: (p.streakFreeze || 0) + 1 };
+      return { player: p, msg: '🌴 Dia de folga: HP cheio e ofensiva protegida — descanse sem culpa!' };
+    }
+    case 'buff_energia': {
+      p = healHp(p, p.maxHp);
+      p = { ...p, xpBoostUntil: Date.now() + 3600 * 1000 };
+      return { player: p, msg: '🔋 Buff de Energia: HP cheio + 2x XP por 1h ⚡' };
+    }
+    case 'queima_estoque': {
+      p = addCoins(p, 120);
+      return { player: p, msg: '🏷️ Queima de estoque: +120 moedas para gastar no Mercado!' };
+    }
+    case 'abobora': {
+      // Doce ou travessura (evento de Halloween).
+      if (Math.random() < 0.75) { const v = 66 + Math.floor(Math.random() * 80); p = addCoins(p, v); return { player: p, msg: `🎃 Doce! +${v} moedas` }; }
+      p = { ...p, xpBoostUntil: Date.now() + 3 * 3600 * 1000 };
+      return { player: p, msg: '🎃 Travessura vira sorte: 2x XP por 3h!' };
+    }
+    // 'skip_tarefa' é tratado na aba Eventos (conclui uma missão pendente de graça).
+    default: {
+      // Nenhum item é inútil: fallback dá um pequeno bônus de moedas.
+      p = addCoins(p, 25);
+      return { player: p, msg: 'Item usado ✓ · +25 🪙' };
+    }
   }
 }
 
