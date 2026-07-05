@@ -45,7 +45,7 @@ export default function Notifier() {
 
       // Bosses no automático (renasce recorrentes, penaliza prazos vencidos e
       // derrota os que cumpriram o requisito nas abas). A animação em tela é
-      // disparada pela própria ação (via lastBossDefeat → Celebration).
+      // disparada pela própria ação (via bossQueue → Celebration).
       const r = useStore.getState().runBossChecks();
       r.penalized.forEach((n) => sendNotification('☠️ Boss não derrotado', `"${n}" venceu o prazo — você tomou a penalidade.`));
       r.defeated.forEach((d) => sendNotification('⚔️ Boss derrotado!', `Você venceu "${d.nome}"! 🪙 +${d.coins} · ⭐ +${d.xp} XP${d.recompensa ? ` · 🎁 ${d.recompensa}` : ''}`));

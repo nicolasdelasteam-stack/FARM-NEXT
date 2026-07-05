@@ -33,7 +33,7 @@ export interface AppState {
   missions: Mission[];
   missionHistory: Mission[];
   weekStats: { week: string; missoes: number }; // contador semanal (boss "missões da semana")
-  lastBossDefeat: BossDefeatInfo | null;         // alimenta a animação de celebração
+  bossQueue: BossDefeatInfo[];                   // fila de bosses derrotados a celebrar (1 card por boss)
   settings: Settings;
   market: typeof INITIAL_MARKET;
   agua: { copos: number; meta: number; historico: Record<string, { copos: number; completou: boolean }> };
@@ -68,7 +68,8 @@ export interface AppState {
   setMissions: (missions: Mission[]) => void;
   setMissionHistory: (missionHistory: Mission[]) => void;
   bumpWeekMissao: () => void;
-  setLastBossDefeat: (info: BossDefeatInfo | null) => void;
+  enqueueBossDefeats: (infos: BossDefeatInfo[]) => void; // adiciona à fila de celebração
+  dismissBossDefeat: () => void;                          // remove o card atual (o próximo aparece)
   // Roda os bosses (renasce recorrentes, penaliza prazos, derrota os que cumpriram
   // o requisito nas abas). Retorna o que aconteceu para as notificações.
   runBossChecks: () => { defeated: BossDefeatInfo[]; penalized: string[] };
@@ -111,7 +112,7 @@ export const useStore = create<AppState>()(
       missions: [],
       missionHistory: [],
       weekStats: { week: '', missoes: 0 },
-      lastBossDefeat: null,
+      bossQueue: [],
       settings: { ...DEFAULT_SETTINGS },
       market: { ...INITIAL_MARKET, purchases: [] },
       agua: { copos: 0, meta: 8, historico: {} },
@@ -148,7 +149,8 @@ export const useStore = create<AppState>()(
         const atual = s.weekStats.week === wk ? s.weekStats.missoes : 0;
         return { weekStats: { week: wk, missoes: atual + 1 } };
       }),
-      setLastBossDefeat: (lastBossDefeat) => set({ lastBossDefeat }),
+      enqueueBossDefeats: (infos) => { if (infos.length) set((s) => ({ bossQueue: [...s.bossQueue, ...infos] })); },
+      dismissBossDefeat: () => set((s) => ({ bossQueue: s.bossQueue.slice(1) })),
       runBossChecks: () => {
         const s = get();
         const ref = refreshBosses(s.boss.bosses);
@@ -171,8 +173,8 @@ export const useStore = create<AppState>()(
             eventos: auto.invItems.length > 0
               ? { ...s.eventos, inventario: [...s.eventos.inventario, ...auto.invItems.map((it) => ({ id: uid(), nome: it.nome, icon: '🎁', origem: it.origem, usado: false, efeito: it.efeito }))] }
               : s.eventos,
-            // A última derrota dispara a animação de celebração (Celebration.tsx).
-            ...(auto.defeated.length > 0 ? { lastBossDefeat: auto.defeated[auto.defeated.length - 1] } : {}),
+            // Cada boss derrotado entra na fila — 1 card por boss, na ordem.
+            ...(auto.defeated.length > 0 ? { bossQueue: [...s.bossQueue, ...auto.defeated] } : {}),
           });
         }
         return { defeated: auto.defeated, penalized: pen.penalized };
@@ -188,8 +190,8 @@ export const useStore = create<AppState>()(
         if (jaPremiada) return { ok: true, jaPremiada: true, title: m.title };
         const res = applyMissionComplete(s.player, m, s.settings, activeEventMods(s.eventos));
         set({ player: res.player });
-        // Boss automático do dashboard derrotado → celebração nomeando-o.
-        if (res.bossDefeated) set({ lastBossDefeat: { nome: res.player.bossName || 'Chefe', icon: res.player.bossIcon || '👹', coins: 50, xp: 0 } });
+        // Boss automático do dashboard derrotado → entra na fila de celebração.
+        if (res.bossDefeated) set((st) => ({ bossQueue: [...st.bossQueue, { nome: res.player.bossName || 'Chefe', icon: res.player.bossIcon || '👹', coins: 50, xp: 0 }] }));
         get().bumpWeekMissao();   // alimenta o boss "missões da semana"
         get().runBossChecks();    // pode derrotar um boss (estudos/provas/etc.) na hora
         return { ok: true, leveledUp: res.leveledUp, bossDefeated: res.bossDefeated, xp: m.reward.xp, coins: m.reward.coins, title: m.title };
@@ -257,7 +259,7 @@ export const useStore = create<AppState>()(
           missions,
           missionHistory: p.missionHistory || [],
           weekStats: p.weekStats || { week: '', missoes: 0 },
-          lastBossDefeat: null,
+          bossQueue: [],
           dieta: p.dieta || D.dieta(),
           compras: p.compras || D.compras(),
           eventos: p.eventos || D.eventos(),
@@ -278,9 +280,9 @@ export const useStore = create<AppState>()(
           market,
         } as AppState;
       },
-      // lastBossDefeat é UI transitória — não persiste (senão a tela de vitória
+      // bossQueue é UI transitória — não persiste (senão a tela de vitória
       // reapareceria a cada reload).
-      partialize: (s) => { const rest = { ...s } as Partial<AppState>; delete rest.lastBossDefeat; return rest as AppState; },
+      partialize: (s) => { const rest = { ...s } as Partial<AppState>; delete rest.bossQueue; return rest as AppState; },
     }
   )
 );

@@ -83,12 +83,14 @@ async function shareBossCard(info: BossDefeatInfo) {
   URL.revokeObjectURL(url);
 }
 
-// Celebração global. A tela de BOSS é lida direto do store (lastBossDefeat) —
-// assim aparece para QUALQUER derrota que marque esse campo, sem depender de
-// timing de subscribe. Some só quando o usuário fecha.
+// Celebração global. A tela de BOSS é lida direto da fila do store (bossQueue) —
+// aparece para QUALQUER derrota (1 card por boss, na ordem), sem depender de
+// timing de subscribe. Cada card some só quando o usuário fecha.
 export default function Celebration() {
-  const bossDefeat = useStore((s) => s.lastBossDefeat);
-  const setLastBossDefeat = useStore((s) => s.setLastBossDefeat);
+  // Fila de bosses derrotados — mostra 1 card por vez, na ordem em que caíram.
+  const bossQueue = useStore((s) => s.bossQueue);
+  const dismissBossDefeat = useStore((s) => s.dismissBossDefeat);
+  const bossDefeat = bossQueue[0] || null;
   const [popup, setPopup] = useState<Popup | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mountedAt = useRef(0);
@@ -167,7 +169,7 @@ export default function Celebration() {
   // ─── Celebração de BOSS (destaque, tela cheia, compartilhável, fica até fechar) ───
   if (bossDefeat) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm cursor-pointer" onClick={() => setLastBossDefeat(null)}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm cursor-pointer" onClick={() => dismissBossDefeat()}>
         <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
         <div className="animate-zenite-pop relative w-[min(92vw,26rem)] px-7 py-7 rounded-3xl border-2 border-amber-500/50 bg-gradient-to-b from-[#1a0b12] to-[#0b0a12] text-center shadow-[0_0_80px_rgba(239,68,68,0.4)]" onClick={(e) => e.stopPropagation()}>
           <div className="text-[11px] tracking-[0.35em] text-red-400 uppercase mb-2">⚔ Boss Derrotado ⚔</div>
@@ -187,7 +189,7 @@ export default function Celebration() {
           </div>
           <div className="flex gap-2 mt-5">
             <button onClick={() => shareBossCard(bossDefeat)} className="flex-1 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-red-500 hover:brightness-110 text-sm font-bold text-black">📸 Compartilhar vitória</button>
-            <button onClick={() => setLastBossDefeat(null)} className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-sm font-semibold">Fechar</button>
+            <button onClick={() => dismissBossDefeat()} className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-sm font-semibold">{bossQueue.length > 1 ? `Próximo (${bossQueue.length - 1}) →` : 'Fechar'}</button>
           </div>
           {bossDefeat.recompensa && <p className="text-[11px] text-zinc-500 mt-2">🎁 no inventário — use em Eventos → Inventário</p>}
         </div>

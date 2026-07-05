@@ -24,7 +24,7 @@ export default function BossPage() {
   const settings = useStore((s) => s.settings);
   const eventos = useStore((s) => s.eventos);
   const setEventos = useStore((s) => s.setEventos);
-  const setLastBossDefeat = useStore((s) => s.setLastBossDefeat);
+  const enqueueBossDefeats = useStore((s) => s.enqueueBossDefeats);
   const treinos = useStore((s) => s.treinos);
   const agua = useStore((s) => s.agua);
   const casa = useStore((s) => s.casa);
@@ -94,7 +94,7 @@ export default function BossPage() {
       setEventos({ ...eventos, inventario: [...eventos.inventario, { id: uid(), nome: b.recompensa, icon: '🎁', origem: `Boss: ${b.nome}`, usado: false, efeito: b.recompensaEfeito }] });
     }
     // Dispara a animação de celebração em tela (nomeia o boss + recompensas).
-    setLastBossDefeat({ nome: b.nome, icon: b.icon, coins: b.recompensaCoins || 0, xp: b.recompensaXp || 0, recompensa: b.recompensa || undefined });
+    enqueueBossDefeats([{ nome: b.nome, icon: b.icon, coins: b.recompensaCoins || 0, xp: b.recompensaXp || 0, recompensa: b.recompensa || undefined }]);
   };
   const reviver = (id: string) =>
     setBoss({ ...boss, bosses: boss.bosses.map((x) => x.id === id ? { ...x, derrotado: false, penalizado: false, data: null } : x) });

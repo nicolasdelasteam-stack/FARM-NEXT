@@ -21,8 +21,8 @@ export function useReward() {
     s.setPlayer(res.player);
     // Nível/boss têm fanfarra própria na Celebration — aqui só o "ding" de XP.
     if (!res.leveledUp && !res.bossDefeated) play('ding');
-    // Se a ação matou o boss automático do dashboard, mostra a tela de vitória.
-    if (res.bossDefeated) s.setLastBossDefeat({ nome: res.player.bossName || 'Chefe', icon: res.player.bossIcon || '👹', coins: 50, xp: 0 });
+    // Se a ação matou o boss automático do dashboard, entra na fila de celebração.
+    if (res.bossDefeated) s.enqueueBossDefeats([{ nome: res.player.bossName || 'Chefe', icon: res.player.bossIcon || '👹', coins: 50, xp: 0 }]);
     // Toda ação de vida real pode ter cumprido o requisito de um boss — checa na hora.
     s.runBossChecks();
     const xpFinal = Math.max(0, Math.round(xp * mods.xpMult));
