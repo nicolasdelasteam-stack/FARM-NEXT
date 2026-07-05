@@ -30,6 +30,7 @@ export interface AppState {
   // Data
   player: Player;
   missions: Mission[];
+  missionHistory: Mission[];
   settings: Settings;
   market: typeof INITIAL_MARKET;
   agua: { copos: number; meta: number; historico: Record<string, { copos: number; completou: boolean }> };
@@ -62,6 +63,7 @@ export interface AppState {
   // Actions
   setPlayer: (player: Player) => void;
   setMissions: (missions: Mission[]) => void;
+  setMissionHistory: (missionHistory: Mission[]) => void;
   setSettings: (settings: Settings) => void;
   setRoute: (route: string) => void;
   setView: (view: string) => void;
@@ -96,6 +98,7 @@ export const useStore = create<AppState>()(
     (set) => ({
       player: { ...DEFAULT_PLAYER },
       missions: [],
+      missionHistory: [],
       settings: { ...DEFAULT_SETTINGS },
       market: { ...INITIAL_MARKET, purchases: [] },
       agua: { copos: 0, meta: 8, historico: {} },
@@ -125,6 +128,7 @@ export const useStore = create<AppState>()(
 
       setPlayer: (player) => set({ player }),
       setMissions: (missions) => set({ missions }),
+      setMissionHistory: (missionHistory) => set({ missionHistory }),
       setSettings: (settings) => set({ settings }),
       setRoute: (route) => set({ route }),
       setView: (view) => set({ view }),
@@ -155,15 +159,38 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'zenite-storage',
-      version: 9,
+      version: 10,
       migrate: (persisted: unknown) => {
         const p = (persisted || {}) as Record<string, unknown>;
+
+        // v10: anti-farm — missões concluídas antigas contam como já premiadas.
+        const missions = ((p.missions as Mission[]) || []).map((m) =>
+          m.done && !m.rewardedOn ? { ...m, rewardedOn: (m.completedAt || '').slice(0, 10) || null } : m,
+        );
+
+        // v10: novos bosses/troféus padrão entram nos dados já salvos (merge por id);
+        // troféus existentes ganham o requisito automático (auto) dos padrões.
+        const bossAntigo = ((p.boss as BossState) || D.boss()).bosses || [];
+        const bossMerged = [...bossAntigo, ...DEFAULT_BOSSES.filter((d) => !bossAntigo.some((b) => b.id === d.id)).map((b) => ({ ...b }))];
+
+        const hallAntigo = (p.hall as Trofeu[]) || [...DEFAULT_HALL];
+        const hallMerged = [
+          ...hallAntigo.map((h) => { const d = DEFAULT_HALL.find((x) => x.id === h.id); return d?.auto && !h.auto ? { ...h, auto: d.auto } : h; }),
+          ...DEFAULT_HALL.filter((d) => !hallAntigo.some((h) => h.id === d.id)),
+        ];
+
+        const market = { ...INITIAL_MARKET, ...((p.market as object) || {}) } as typeof INITIAL_MARKET;
+        market.rewards = [...market.rewards, ...INITIAL_MARKET.rewards.filter((d) => !market.rewards.some((r) => r.id === d.id))];
+        market.items = [...market.items, ...INITIAL_MARKET.items.filter((d) => !market.items.some((i) => i.id === d.id))];
+
         return {
           ...p,
+          missions,
+          missionHistory: p.missionHistory || [],
           dieta: p.dieta || D.dieta(),
           compras: p.compras || D.compras(),
           eventos: p.eventos || D.eventos(),
-          hall: p.hall || [...DEFAULT_HALL],
+          hall: hallMerged,
           companions: p.companions || [],
           treinos: p.treinos || D.treinos(),
           deepwork: p.deepwork || D.deepwork(),
@@ -172,12 +199,12 @@ export const useStore = create<AppState>()(
           casa: p.casa || D.casa(),
           estudos: { ...D.estudos(), ...((p.estudos as object) || {}) }, // v9: + paginas (estilo Notion)
           financas: { ...D.financas(), ...((p.financas as object) || {}) },
-          boss: p.boss || D.boss(),
+          boss: { bosses: bossMerged },
           cerebro: p.cerebro || D.cerebro(),
           notas: p.notas || D.notas(),
           midia: p.midia || D.midia(),
           achievements: p.achievements || [],
-          market: { ...INITIAL_MARKET, ...((p.market as object) || {}) },
+          market,
         } as AppState;
       },
     }

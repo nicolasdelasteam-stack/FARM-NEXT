@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { canNotify, sendNotification } from '@/lib/notify';
-import { applyDailyReset, applyAguaReset, today } from '@/lib/engine';
+import { applyDailyReset, applyAguaReset, checkHallUnlocks, spawnWeeklyEvent, today } from '@/lib/engine';
 
 export default function Notifier() {
   const settings = useStore((s) => s.settings);
@@ -18,10 +18,29 @@ export default function Notifier() {
       if (res.changed) {
         s.setPlayer(res.player);
         s.setMissions(res.missions);
+        // Missões únicas concluídas vão para o histórico (Configurações).
+        if (res.history.length > 0) s.setMissionHistory([...s.missionHistory, ...res.history]);
         // Virada do dia também arquiva/zera a água e reabre o checklist de foco.
         s.setAgua(applyAguaReset(s.agua, s.lastDailyReset));
         s.setDeepwork({ ...s.deepwork, checklist: (s.deepwork.checklist || []).map(() => false) });
         s.setLastDailyReset(today());
+      }
+
+      // Troféus/títulos com requisito automático surgem sozinhos no Hall.
+      const aguaDias = Object.values(s.agua.historico || {}).filter((h) => h.completou).length;
+      const livrosLidos = (s.estudos.biblioteca || []).filter((l) => l.status === 'lido').length
+        + (s.cerebro.livros || []).filter((l) => l.status === 'lido').length;
+      const hu = checkHallUnlocks(s.player, s.hall, { aguaDias, livrosLidos });
+      if (hu.changed) {
+        s.setHall(hu.hall);
+        hu.novos.forEach((n) => sendNotification('🏛️ Hall da Glória', `"${n}" desbloqueado — resgate sua recompensa!`));
+      }
+
+      // Evento automático da semana (pool rotativa).
+      const ev = spawnWeeklyEvent(s.eventos);
+      if (ev.changed) {
+        s.setEventos(ev.eventos);
+        if (ev.novo) sendNotification('🎉 Evento da semana', `"${ev.novo}" começou — veja em Eventos!`);
       }
     };
     check();

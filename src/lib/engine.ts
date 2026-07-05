@@ -1,5 +1,5 @@
-import type { Player, Difficulty, Mission, Reward, Boss, Agua } from './types';
-import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, PET_STREAK_REQ } from './constants';
+import type { Player, Difficulty, Mission, Reward, Boss, Agua, Trofeu, EventosState } from './types';
+import { LEVELS, TITLES_EXTENDED, DIFFICULTIES, CATEGORY_ATTR_MAP, BOSSES, PET_STREAK_REQ, DEFAULT_EVENT_POOL } from './constants';
 
 // ─── Date helpers ───
 export function today(): string {
@@ -231,15 +231,16 @@ export function applyFailDamage(missions: Mission[], settings: { hardcoreFail?: 
 }
 
 // Reset diário: zera XP do dia, aplica continuidade da ofensiva, dano por missões
-// falhadas (hardcore) e reabre missões diárias/hábitos. Roda 1x quando o dia vira.
+// falhadas (hardcore), reabre missões diárias/hábitos e arquiva missões únicas
+// concluídas no histórico. Roda 1x quando o dia vira.
 export function applyDailyReset(
   player: Player,
   missions: Mission[],
   lastReset: string | null,
   settings: { hardcoreFail?: boolean; hardcoreHp?: boolean; gentleMode?: boolean },
-): { player: Player; missions: Mission[]; changed: boolean } {
+): { player: Player; missions: Mission[]; history: Mission[]; changed: boolean } {
   const t = today();
-  if (lastReset === t) return { player, missions, changed: false };
+  if (lastReset === t) return { player, missions, history: [], changed: false };
 
   let p = { ...player };
   const hpLost = applyFailDamage(missions, settings);
@@ -248,13 +249,67 @@ export function applyDailyReset(
   p.dailyXp = 0;
   p.metaBatidaHoje = false;
 
-  const nextMissions = missions.map((m) =>
-    m.type === 'daily' || m.type === 'habit'
-      ? { ...m, done: false, completedAt: null, date: t }
-      : m,
-  );
+  // Missões únicas concluídas saem do Campo e vão para o histórico (Configurações).
+  const history = missions.filter((m) => m.done && m.type === 'mission');
+  const nextMissions = missions
+    .filter((m) => !(m.done && m.type === 'mission'))
+    .map((m) =>
+      m.type === 'daily' || m.type === 'habit'
+        ? { ...m, done: false, completedAt: null, date: t }
+        : m,
+    );
 
-  return { player: p, missions: nextMissions, changed: true };
+  return { player: p, missions: nextMissions, history, changed: true };
+}
+
+// Libera automaticamente troféus/títulos do Hall cujo requisito (auto) foi
+// atingido — eles "surgem" prontos para resgate.
+export function checkHallUnlocks(
+  player: Player,
+  hall: Trofeu[],
+  extras: { aguaDias: number; livrosLidos: number },
+): { hall: Trofeu[]; changed: boolean; novos: string[] } {
+  const atingiu = (a: NonNullable<Trofeu['auto']>): boolean => {
+    switch (a.tipo) {
+      case 'level': return player.level >= a.valor;
+      case 'streak': return Math.max(player.streak || 0, player.bestStreak || 0) >= a.valor;
+      case 'boss': return (player.bossDefeated || 0) >= a.valor;
+      case 'missoes': return (player.totalMissionsDone || 0) >= a.valor;
+      case 'foco': return (player.totalFocusMinutes || 0) >= a.valor;
+      case 'moedas': return player.coins >= a.valor;
+      case 'agua': return extras.aguaDias >= a.valor;
+      case 'livros': return extras.livrosLidos >= a.valor;
+    }
+  };
+  let changed = false;
+  const novos: string[] = [];
+  const next = hall.map((h) => {
+    if (h.auto && h.status === 'disponivel' && !h.liberado && atingiu(h.auto)) {
+      changed = true;
+      novos.push(h.nome);
+      return { ...h, liberado: true };
+    }
+    return h;
+  });
+  return { hall: next, changed, novos };
+}
+
+// Evento automático da semana: escolhe da pool pela chave da semana e cria se
+// ainda não existir (id determinístico ev_auto_<segunda-feira>).
+export function spawnWeeklyEvent(eventos: EventosState): { eventos: EventosState; changed: boolean; novo?: string } {
+  const wk = getWeekStart();
+  const id = 'ev_auto_' + wk;
+  if ((eventos.eventos || []).some((e) => e.id === id)) return { eventos, changed: false };
+  const tpl = DEFAULT_EVENT_POOL[hashCode(wk) % DEFAULT_EVENT_POOL.length];
+  const [y, m, d] = wk.split('-').map(Number);
+  const fimDate = new Date(y, m - 1, d + 6);
+  const fim = `${fimDate.getFullYear()}-${String(fimDate.getMonth() + 1).padStart(2, '0')}-${String(fimDate.getDate()).padStart(2, '0')}`;
+  const novo = {
+    id, nome: tpl.nome, descricao: tpl.descricao, inicio: wk, fim,
+    recompensa: tpl.recompensa, recompensaCoins: tpl.coins, recompensaEfeito: tpl.efeito,
+    recompensaIcon: tpl.icon, status: 'ativo' as const, resgatado: false,
+  };
+  return { eventos: { ...eventos, eventos: [...(eventos.eventos || []), novo] }, changed: true, novo: tpl.nome };
 }
 
 // Vira o dia da água: arquiva os copos do dia que terminou no histórico e zera o contador.
@@ -424,6 +479,7 @@ export function createMission(data: {
     startDate: data.startDate || null,
     dueDate: data.dueDate || null,
     subtasks: [],
+    rewardedOn: null,
   };
 }
 

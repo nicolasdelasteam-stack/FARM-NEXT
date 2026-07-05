@@ -43,7 +43,10 @@ export default function CampoPage() {
   const concluir = (id: string) => {
     const m = missions.find((x) => x.id === id);
     if (!m || m.done) return;
-    updateMission(id, { done: true, completedAt: new Date().toISOString() });
+    // Anti-farm: missão única paga 1x na vida; diária/hábito paga 1x por dia.
+    const jaPremiada = m.type === 'mission' ? !!m.rewardedOn : m.rewardedOn === todayStr;
+    updateMission(id, { done: true, completedAt: new Date().toISOString(), ...(jaPremiada ? {} : { rewardedOn: todayStr }) });
+    if (jaPremiada) { play('check'); flash(`${m.title}: concluída ✓ (recompensa já recebida)`); return; }
     const res = applyMissionComplete(player, m, settings);
     setPlayer(res.player);
     if (!res.leveledUp && !res.bossDefeated) play('check');

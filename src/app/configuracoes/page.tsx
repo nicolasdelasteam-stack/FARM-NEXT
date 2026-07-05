@@ -8,6 +8,8 @@ export default function ConfigPage() {
   const player = useStore((s) => s.player);
   const settings = useStore((s) => s.settings);
   const setSettings = useStore((s) => s.setSettings);
+  const missionHistory = useStore((s) => s.missionHistory);
+  const setMissionHistory = useStore((s) => s.setMissionHistory);
 
   return (
     <div className="max-w-xl space-y-4">
@@ -54,6 +56,29 @@ export default function ConfigPage() {
             </label>
           ))}
         </div>
+      </div>
+
+      <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="font-bold text-sm">📜 Histórico de missões</h3>
+          {missionHistory.length > 0 && (
+            <button onClick={() => setMissionHistory([])} className="text-xs text-zinc-600 hover:text-red-400">Limpar</button>
+          )}
+        </div>
+        {missionHistory.length === 0 ? (
+          <p className="text-xs text-zinc-500">Missões únicas concluídas são arquivadas aqui na virada do dia.</p>
+        ) : (
+          <div className="space-y-1 max-h-72 overflow-y-auto">
+            {[...missionHistory].reverse().map((m) => (
+              <div key={m.id} className="flex items-center gap-2 text-sm border-b border-zinc-800/60 py-1.5">
+                <span className="text-emerald-500">✓</span>
+                <span className="flex-1 truncate text-zinc-300">{m.title}</span>
+                <span className="text-[11px] text-indigo-400 font-semibold shrink-0">+{m.reward?.xp || 0} XP</span>
+                <span className="text-[11px] text-zinc-600 shrink-0">{m.completedAt ? new Date(m.completedAt).toLocaleDateString('pt-BR') : ''}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <NotifSettings />

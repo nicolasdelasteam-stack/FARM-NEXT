@@ -34,6 +34,9 @@ export interface Mission {
   startDate: string | null;
   dueDate: string | null;
   subtasks: Subtask[];
+  // Anti-farm: última data ('YYYY-MM-DD') em que esta missão pagou recompensa.
+  // Missão única paga 1x na vida; diária/hábito paga 1x por dia.
+  rewardedOn?: string | null;
 }
 
 export interface CustomSkill {
@@ -144,7 +147,9 @@ export interface EventosState { eventos: Evento[]; inventario: ItemInventario[];
 
 export type TrofeuTipo = 'conquista' | 'titulo' | 'trofeu' | 'medalha';
 export type TrofeuStatus = 'bloqueado' | 'disponivel' | 'resgatado';
-export interface Trofeu { id: string; nome: string; icon: string; descricao: string; tipo: TrofeuTipo; requisito: string; missaoId?: string; liberado?: boolean; recompensaCoins: number; recompensaXp: number; status: TrofeuStatus; data: string | null; }
+// Requisito automático: o Notifier libera o troféu sozinho quando a condição é atingida.
+export type AutoReqTipo = 'level' | 'streak' | 'boss' | 'missoes' | 'foco' | 'moedas' | 'agua' | 'livros';
+export interface Trofeu { id: string; nome: string; icon: string; descricao: string; tipo: TrofeuTipo; requisito: string; missaoId?: string; liberado?: boolean; recompensaCoins: number; recompensaXp: number; status: TrofeuStatus; data: string | null; auto?: { tipo: AutoReqTipo; valor: number }; }
 
 export type CompanionTipo = 'amigo' | 'pet' | 'parceiro' | 'familia';
 export interface Companion { id: string; nome: string; tipo: CompanionTipo; emoji: string; aniversario: string; dataJuntos: string; notas: string; }

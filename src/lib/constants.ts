@@ -60,6 +60,23 @@ export const DEFAULT_BOSSES: Boss[] = [
   { id: 'b_acucar', nome: 'Senhor do Açúcar', icon: '🍩', lore: 'Tenta te seduzir com doces e fast food fora do plano.', dificuldade: 'media', periodo: 'semanal', comoVencer: 'Cumprir a dieta a semana toda (máx. 2 refeições livres).', requisito: 'Semana dentro da dieta', penalidade: 'Progresso de peso trava.', recompensa: 'Refeição livre garantida', recompensaCoins: 60, recompensaXp: 120, condicao: 'Aparece quando há registro de dieta.', derrotado: false, data: null },
   { id: 'b_procrastinacao', nome: 'A Procrastinação', icon: '👿', lore: 'Sombra que sussurra "depois eu faço".', dificuldade: 'dificil', periodo: 'semanal', comoVencer: 'Zerar as tarefas atrasadas até domingo.', requisito: 'Nenhuma missão vencida na semana', penalidade: 'Missões acumulam e o Caos cresce.', recompensa: 'Baú de foco', recompensaCoins: 100, recompensaXp: 200, condicao: 'Aparece com tarefas pendentes.', derrotado: false, data: null },
   { id: 'b_burnout', nome: 'Titã do Burnout', icon: '🔥', lore: 'Chefe final — surge de tanto correr sem descanso.', dificuldade: 'epico', periodo: 'mensal', comoVencer: 'Fechar o mês com disciplina alta e sono/descanso em dia.', requisito: 'Mês com disciplina ≥ 80%', penalidade: 'Reset da ofensiva e -20 HP.', recompensa: 'Título: Inabalável', recompensaCoins: 250, recompensaXp: 500, condicao: 'Aparece no último dia do mês.', derrotado: false, data: null },
+  { id: 'b_dividas', nome: 'Hidra das Dívidas', icon: '🐉', lore: 'Cada conta esquecida faz nascer duas novas cabeças.', dificuldade: 'dificil', periodo: 'mensal', comoVencer: 'Fechar o mês com saldo positivo em Finanças.', requisito: 'Mês no azul (receitas ≥ despesas)', penalidade: 'Metas financeiras travam.', recompensa: 'Baú Grande de Moedas', recompensaCoins: 150, recompensaXp: 250, recompensaEfeito: 'coins_100', condicao: 'Aparece no início de cada mês.', derrotado: false, data: null },
+  { id: 'b_madrugada', nome: 'Espectro da Madrugada', icon: '🌙', lore: 'Sussurra "só mais um vídeo" enquanto rouba suas horas de sono.', dificuldade: 'media', periodo: 'semanal', comoVencer: 'Dormir no horário planejado em 5 noites da semana.', requisito: '5 noites dormindo cedo', penalidade: 'Menos energia: -10 HP.', recompensa: 'Escudo de Ofensiva', recompensaCoins: 70, recompensaXp: 130, recompensaEfeito: 'freeze', condicao: 'Aparece toda segunda-feira.', derrotado: false, data: null },
+  { id: 'b_bagunca', nome: 'Golem da Bagunça', icon: '🗿', lore: 'Feito de louça acumulada, roupas na cadeira e pó embaixo do sofá.', dificuldade: 'facil', periodo: 'semanal', comoVencer: 'Zerar as tarefas da Casa na semana.', requisito: 'Tarefas da casa 100%', penalidade: 'A bagunça cresce (e a mente pesa).', recompensa: 'Poção de Cura', recompensaCoins: 50, recompensaXp: 100, recompensaEfeito: 'heal_30', condicao: 'Aparece quando há tarefas de casa pendentes.', derrotado: false, data: null },
+  { id: 'b_telas', nome: 'Sereia das Telas', icon: '📱', lore: 'Seu canto é o scroll infinito — marinheiros perdem horas sem perceber.', dificuldade: 'media', periodo: 'semanal', comoVencer: 'Máximo de 2h de redes sociais por dia na semana.', requisito: 'Semana com telas sob controle', penalidade: 'Foco drenado.', recompensa: 'Poção do Dobro de XP', recompensaCoins: 80, recompensaXp: 150, recompensaEfeito: 'xp2x', condicao: 'Aparece toda segunda-feira.', derrotado: false, data: null },
+  { id: 'b_provas', nome: 'Lich das Provas', icon: '💀', lore: 'Guardião do fim do semestre — alimenta-se de quem deixa para a última hora.', dificuldade: 'epico', periodo: 'mensal', comoVencer: 'Estudar todos os dias na semana de prova e fechar as avaliações do mês.', requisito: 'Provas do mês concluídas com preparo', penalidade: 'Reset da ofensiva.', recompensa: 'Elixir da Vida', recompensaCoins: 300, recompensaXp: 500, recompensaEfeito: 'heal_full', condicao: 'Aparece em meses com prova marcada.', derrotado: false, data: null },
+  { id: 'b_sede', nome: 'Vampiro da Sede', icon: '🧛', lore: 'Seca você por dentro enquanto o copo d’água fica cheio na mesa.', dificuldade: 'facil', periodo: 'semanal', comoVencer: 'Bater a meta de água em 5 dias da semana.', requisito: '5 dias de meta de água', penalidade: 'Menos HP máximo na prática.', recompensa: 'Baú de Moedas', recompensaCoins: 60, recompensaXp: 100, recompensaEfeito: 'coins_50', condicao: 'Aparece toda segunda-feira.', derrotado: false, data: null },
+];
+
+// Eventos semanais automáticos: um por semana, escolhido da pool pela chave da
+// semana. Notifier cria sozinho (engine.spawnWeeklyEvent).
+export const DEFAULT_EVENT_POOL: { nome: string; descricao: string; recompensa: string; efeito: string; icon: string; coins: number }[] = [
+  { nome: 'Semana do Foco', descricao: 'Complete 5 sessões na Caverna até domingo.', recompensa: 'Poção do Dobro de XP', efeito: 'xp2x', icon: '⚡', coins: 50 },
+  { nome: 'Maratona de Leitura', descricao: 'Leia todos os dias desta semana.', recompensa: 'Baú de Moedas', efeito: 'coins_50', icon: '🪙', coins: 40 },
+  { nome: 'Semana Shape', descricao: 'Treine pelo menos 4x até domingo.', recompensa: 'Elixir da Vida', efeito: 'heal_full', icon: '❤️', coins: 60 },
+  { nome: 'Operação Casa Limpa', descricao: 'Zere as tarefas da casa esta semana.', recompensa: 'Escudo de Ofensiva', efeito: 'freeze', icon: '❄️', coins: 40 },
+  { nome: 'Desafio Hidratação', descricao: 'Bata a meta de água em 6 dias da semana.', recompensa: 'Baú Grande de Moedas', efeito: 'coins_100', icon: '💰', coins: 30 },
+  { nome: 'Sprint de Estudos', descricao: 'Estude 30 minutos em todos os dias úteis.', recompensa: 'Poção do Dobro de XP', efeito: 'xp2x', icon: '⚡', coins: 50 },
 ];
 
 export const BOSS_DIFICULDADE: Record<string, { label: string; color: string }> = {
@@ -145,6 +162,11 @@ export const INITIAL_MARKET = {
     { id: 'serie', name: '📺 Episódio de série', desc: 'Assistir 1 episódio', cost: 15, weeklyLimit: 0 },
     { id: 'doce', name: '🍫 Doce', desc: 'Um docinho', cost: 10, weeklyLimit: 4 },
     { id: 'folga', name: '🌴 Dia de folga', desc: 'Um dia off merecido', cost: 150, weeklyLimit: 0 },
+    { id: 'cinema', name: '🎬 Cinema', desc: 'Uma ida ao cinema', cost: 60, weeklyLimit: 1 },
+    { id: 'pizza', name: '🍕 Pizza no fim de semana', desc: 'Rodada de pizza liberada', cost: 50, weeklyLimit: 1 },
+    { id: 'cafe_especial', name: '☕ Café especial', desc: 'Aquele café caro e gostoso', cost: 12, weeklyLimit: 0 },
+    { id: 'preguica', name: '🛌 Manhã de preguiça', desc: 'Acordar sem alarme', cost: 80, weeklyLimit: 1 },
+    { id: 'album', name: '🎧 Álbum/skin nova', desc: 'Um mimo digital', cost: 25, weeklyLimit: 0 },
   ] as { id: string; name: string; desc: string; cost: number; weeklyLimit: number }[],
   weekStart: '' as string,
   weekBuys: {} as Record<string, number>,
@@ -168,12 +190,23 @@ export const COMPANION_TIPOS: Record<string, { label: string; emoji: string }> =
   familia: { label: 'Família', emoji: '👨‍👩‍👧' },
 };
 
+// Itens com `auto` são desbloqueados sozinhos pelo Notifier quando o requisito
+// é atingido (engine.checkHallUnlocks) — aí é só clicar em Resgatar.
 export const DEFAULT_HALL: Trofeu[] = [
   { id: 'h_5kg', nome: 'Perdi 5kg', icon: '⚖️', descricao: 'Marco de transformação física.', tipo: 'trofeu', requisito: 'Perder 5kg', recompensaCoins: 100, recompensaXp: 200, status: 'disponivel', data: null },
-  { id: 'h_streak30', nome: 'Constância de Ferro', icon: '🔥', descricao: '30 dias seguidos sem falhar.', tipo: 'medalha', requisito: 'Ofensiva de 30 dias', recompensaCoins: 150, recompensaXp: 300, status: 'disponivel', data: null },
-  { id: 'h_boss', nome: 'Caçador de Bosses', icon: '🗡️', descricao: 'Derrotou um chefe.', tipo: 'trofeu', requisito: 'Derrotar 1 boss', recompensaCoins: 100, recompensaXp: 150, status: 'disponivel', data: null },
-  { id: 'h_lenda', nome: 'Título: Lenda', icon: '👑', descricao: 'Alcançou o auge.', tipo: 'titulo', requisito: 'Chegar ao nível 10', recompensaCoins: 200, recompensaXp: 0, status: 'disponivel', data: null },
+  { id: 'h_streak30', nome: 'Constância de Ferro', icon: '🔥', descricao: '30 dias seguidos sem falhar.', tipo: 'medalha', requisito: 'Ofensiva de 30 dias', recompensaCoins: 150, recompensaXp: 300, status: 'disponivel', data: null, auto: { tipo: 'streak', valor: 30 } },
+  { id: 'h_boss', nome: 'Caçador de Bosses', icon: '🗡️', descricao: 'Derrotou um chefe.', tipo: 'trofeu', requisito: 'Derrotar 1 boss', recompensaCoins: 100, recompensaXp: 150, status: 'disponivel', data: null, auto: { tipo: 'boss', valor: 1 } },
+  { id: 'h_lenda', nome: 'Título: Lenda', icon: '👑', descricao: 'Alcançou o auge.', tipo: 'titulo', requisito: 'Chegar ao nível 10', recompensaCoins: 200, recompensaXp: 0, status: 'disponivel', data: null, auto: { tipo: 'level', valor: 10 } },
   { id: 'h_semestre', nome: 'Semestre Vencido', icon: '🎓', descricao: 'Fechou o semestre com aprovação.', tipo: 'conquista', requisito: 'Concluir o semestre', recompensaCoins: 120, recompensaXp: 250, status: 'disponivel', data: null },
+  { id: 'h_semana_perfeita', nome: 'Semana Perfeita', icon: '🌟', descricao: '7 dias seguidos de meta batida.', tipo: 'medalha', requisito: 'Ofensiva de 7 dias', recompensaCoins: 60, recompensaXp: 100, status: 'disponivel', data: null, auto: { tipo: 'streak', valor: 7 } },
+  { id: 'h_foco_10h', nome: 'Mestre do Foco', icon: '🧘', descricao: '10 horas de foco profundo acumuladas na Caverna.', tipo: 'trofeu', requisito: '600 min de foco', recompensaCoins: 120, recompensaXp: 200, status: 'disponivel', data: null, auto: { tipo: 'foco', valor: 600 } },
+  { id: 'h_hidratado', nome: 'Fonte da Vida', icon: '💧', descricao: 'Meta de água completa em 14 dias.', tipo: 'trofeu', requisito: '14 dias de água em dia', recompensaCoins: 80, recompensaXp: 120, status: 'disponivel', data: null, auto: { tipo: 'agua', valor: 14 } },
+  { id: 'h_rico', nome: 'Tesouro do Dragão', icon: '💰', descricao: 'Acumulou 500 moedas de uma vez.', tipo: 'conquista', requisito: 'Ter 500 moedas', recompensaCoins: 0, recompensaXp: 300, status: 'disponivel', data: null, auto: { tipo: 'moedas', valor: 500 } },
+  { id: 'h_cacador', nome: 'Caçador Lendário', icon: '🏹', descricao: 'Dez chefes caíram diante de você.', tipo: 'trofeu', requisito: 'Derrotar 10 bosses', recompensaCoins: 200, recompensaXp: 300, status: 'disponivel', data: null, auto: { tipo: 'boss', valor: 10 } },
+  { id: 'h_estrategista', nome: 'Título: Estrategista', icon: '♟️', descricao: '50 missões concluídas.', tipo: 'titulo', requisito: 'Concluir 50 missões', recompensaCoins: 150, recompensaXp: 250, status: 'disponivel', data: null, auto: { tipo: 'missoes', valor: 50 } },
+  { id: 'h_centuriao', nome: 'Centurião', icon: '💯', descricao: '100 missões concluídas.', tipo: 'medalha', requisito: 'Concluir 100 missões', recompensaCoins: 250, recompensaXp: 400, status: 'disponivel', data: null, auto: { tipo: 'missoes', valor: 100 } },
+  { id: 'h_monarca', nome: 'Título: Monarca das Sombras', icon: '👤', descricao: 'O trono mais alto do Sistema.', tipo: 'titulo', requisito: 'Chegar ao nível 25', recompensaCoins: 300, recompensaXp: 0, status: 'disponivel', data: null, auto: { tipo: 'level', valor: 25 } },
+  { id: 'h_bibliotecario', nome: 'Título: Bibliotecário de Alexandria', icon: '📚', descricao: 'Cinco livros lidos até o fim.', tipo: 'titulo', requisito: 'Ler 5 livros', recompensaCoins: 100, recompensaXp: 200, status: 'disponivel', data: null, auto: { tipo: 'livros', valor: 5 } },
 ];
 
 // ─── FARM-NEXT extras (Fase 2) ───
@@ -214,10 +247,13 @@ export const PACKING_SUGGESTIONS: Record<string, string[]> = {
 // ver public/sounds/CREDITS.md). Substituíram o ruído sintetizado.
 export const AMBIENT_TRACKS = [
   { id: 'chuva', label: '🌧️ Chuva', src: '/sounds/chuva.ogg' },
+  { id: 'tempestade', label: '⛈️ Tempestade', src: '/sounds/tempestade.ogg' },
   { id: 'cafe', label: '☕ Cafeteria', src: '/sounds/cafeteria.ogg' },
-  { id: 'vento', label: '🌬️ Vento', src: '/sounds/vento.ogg' },
+  { id: 'transito', label: '🚗 Trânsito', src: '/sounds/transito.ogg' },
+  { id: 'vento', label: '🌬️ Vento uivante', src: '/sounds/vento.ogg' },
   { id: 'ondas', label: '🌊 Ondas', src: '/sounds/ondas.ogg' },
   { id: 'fogo', label: '🔥 Fogueira', src: '/sounds/fogueira.ogg' },
+  { id: 'gelo', label: '🧊 Gelo estalando', src: '/sounds/gelo.ogg' },
 ];
 export const DEEPWORK_CHECKLIST = [
   'Desligar notificações do celular',
