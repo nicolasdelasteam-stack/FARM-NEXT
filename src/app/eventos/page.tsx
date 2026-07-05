@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { uid, today, addCoins, applyItemEffect } from '@/lib/engine';
+import { play } from '@/lib/sound';
 import { REWARD_ITEMS } from '@/lib/constants';
 
 export default function EventosPage() {
@@ -47,6 +48,7 @@ export default function EventosPage() {
   const resgatar = (id: string) => {
     const ev = eventos.eventos.find((e) => e.id === id);
     if (!ev || ev.resgatado) return;
+    play('fanfare');
     const novoInv = [...eventos.inventario, { id: uid(), nome: ev.recompensa, icon: ev.recompensaIcon || '🎁', origem: ev.nome, usado: false, efeito: ev.recompensaEfeito }];
     setEventos({ ...eventos, eventos: eventos.eventos.map((e) => e.id === id ? { ...e, resgatado: true, status: 'concluido' as const } : e), inventario: novoInv });
     if (ev.recompensaCoins > 0) setPlayer(addCoins(player, ev.recompensaCoins));
@@ -56,6 +58,7 @@ export default function EventosPage() {
   const usarItem = (id: string) => {
     const it = eventos.inventario.find((i) => i.id === id);
     if (!it || it.usado) return;
+    play('ding');
     const res = applyItemEffect(player, it.efeito);
     setPlayer(res.player);
     setEventos({ ...eventos, inventario: eventos.inventario.map((i) => i.id === id ? { ...i, usado: true } : i) });

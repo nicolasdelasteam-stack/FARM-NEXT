@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { applyActivityReward } from '@/lib/engine';
+import { play } from '@/lib/sound';
 
 // Recompensa padrão das abas de vida real: aplica XP/moedas no player (via
 // engine.applyActivityReward, com ofensiva e boss automático) e devolve a
@@ -16,6 +17,8 @@ export function useReward() {
     const s = useStore.getState();
     const res = applyActivityReward(s.player, s.settings, { xp, coins: opts?.coins, skill: opts?.skill });
     s.setPlayer(res.player);
+    // Nível/boss têm fanfarra própria na Celebration — aqui só o "ding" de XP.
+    if (!res.leveledUp && !res.bossDefeated) play('ding');
     const extras = [
       `+${xp} XP`,
       opts?.coins ? `+${opts.coins} 🪙` : '',

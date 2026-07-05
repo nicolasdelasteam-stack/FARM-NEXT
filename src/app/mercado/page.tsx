@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { spendCoins, healHp, addCoins, openLootBox, getWeekStart, nowMs, uid } from '@/lib/engine';
+import { play } from '@/lib/sound';
 
 export default function MercadoPage() {
   const player = useStore((s) => s.player);
@@ -27,7 +28,8 @@ export default function MercadoPage() {
 
   const buyItem = (item: { id: string; name: string; cost: number }) => {
     const afterSpend = spendCoins(player, item.cost);
-    if (!afterSpend) return flash('Moedas insuficientes.');
+    if (!afterSpend) { play('error'); return flash('Moedas insuficientes.'); }
+    play(item.id.startsWith('loot_') ? 'fanfare' : 'buy');
     let p = afterSpend; let m = 'Comprado';
     switch (item.id) {
       case 'potion': p = healHp(p, 30); m = '+30 HP'; break;
@@ -45,9 +47,10 @@ export default function MercadoPage() {
 
   const buyReward = (rw: { id: string; name: string; cost: number; weeklyLimit: number }) => {
     const used = buys[rw.id] || 0;
-    if (rw.weeklyLimit > 0 && used >= rw.weeklyLimit) return flash('Limite semanal atingido.');
+    if (rw.weeklyLimit > 0 && used >= rw.weeklyLimit) { play('error'); return flash('Limite semanal atingido.'); }
     const afterSpend = spendCoins(player, rw.cost);
-    if (!afterSpend) return flash('Moedas insuficientes.');
+    if (!afterSpend) { play('error'); return flash('Moedas insuficientes.'); }
+    play('buy');
     setPlayer(afterSpend);
     setMarket({ ...market, weekStart: wk, weekBuys: { ...buys, [rw.id]: used + 1 }, purchases: [...(market.purchases || []), rw.id] });
     flash(`${rw.name} resgatado! 🎉`);

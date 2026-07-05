@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { addXP } from '@/lib/engine';
+import { play, unlock } from '@/lib/sound';
 
 export default function CavernaPage() {
   const [config] = useState({ focus: 25 * 60, rest: 5 * 60 });
@@ -26,6 +27,7 @@ export default function CavernaPage() {
       let p = { ...s.player, totalFocusMinutes: (s.player.totalFocusMinutes || 0) + mins };
       p = addXP(p, 15, s.settings);
       s.setPlayer(p);
+      play('chime');
       setMsg(`🎯 Sessão concluída! +${mins} min de foco · +15 XP`);
       setTimeout(() => setMsg(''), 4000);
     }
@@ -43,6 +45,7 @@ export default function CavernaPage() {
   };
 
   const start = () => {
+    unlock(); // gesto do usuário libera o áudio para o sino tocar ao fim da sessão
     setRunning(true);
     clearInterval(intervalRef.current!);
     intervalRef.current = setInterval(tick, 1000);

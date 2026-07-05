@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore } from 'react';
 import { useStore } from '@/lib/store';
 import { createMission } from '@/lib/engine';
+import { play } from '@/lib/sound';
 import type { Difficulty } from '@/lib/types';
 
 const AVATARES = ['😺', '🦊', '🐺', '🦁', '🐉', '🦅', '⚔️', '🥷', '🧙', '👑', '😎', '🤖'];
@@ -36,6 +37,7 @@ export default function Onboarding() {
   if (!ready || player.onboardingDone) return null;
 
   const concluir = () => {
+    play('levelup');
     SUGESTOES.forEach((s, i) => {
       if (marcadas[i]) addMission(createMission({ title: s.titulo, difficulty: s.dif, type: 'daily', skill: s.skill }));
     });

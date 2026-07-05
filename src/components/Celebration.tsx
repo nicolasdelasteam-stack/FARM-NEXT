@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
+import { play } from '@/lib/sound';
 
 type Evento = { titulo: string; sub: string; icon: string };
 
@@ -20,10 +21,13 @@ export default function Celebration() {
       if (Date.now() - mountedAt.current < 1500) return;
       const p = state.player, q = prev.player;
       if (p.level > q.level) {
+        play('levelup');
         setEvento({ icon: '⬆️', titulo: `NÍVEL ${p.level}`, sub: `Novo título: ${p.title}` });
       } else if ((p.bossDefeated || 0) > (q.bossDefeated || 0)) {
+        play('boss');
         setEvento({ icon: '⚔️', titulo: 'BOSS DERROTADO', sub: '+50 moedas de bônus' });
       } else if (p.metaBatidaHoje && !q.metaBatidaHoje) {
+        play('streak');
         setEvento({ icon: '🔥', titulo: `OFENSIVA: ${p.streak} ${p.streak === 1 ? 'DIA' : 'DIAS'}`, sub: 'Meta diária batida — dia garantido!' });
       }
     });

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { uid, today, addCoins, addXP } from '@/lib/engine';
+import { play } from '@/lib/sound';
 import type { Trofeu } from '@/lib/types';
 
 export default function HallPage() {
@@ -37,6 +38,7 @@ export default function HallPage() {
   const resgatar = (id: string) => {
     const tr = hall.find((h) => h.id === id);
     if (!tr || tr.status === 'resgatado' || !podeResgatar(tr)) return;
+    play('fanfare');
     let p = player;
     if (tr.recompensaCoins > 0) p = addCoins(p, tr.recompensaCoins);
     if (tr.recompensaXp > 0) p = addXP(p, tr.recompensaXp, settings);

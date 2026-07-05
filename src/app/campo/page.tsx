@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { createMission, applyMissionComplete, today } from '@/lib/engine';
+import { play } from '@/lib/sound';
 import { DIFFICULTIES, SKILL_NAMES } from '@/lib/constants';
 import type { Difficulty, MissionType } from '@/lib/types';
 
@@ -45,6 +46,7 @@ export default function CampoPage() {
     updateMission(id, { done: true, completedAt: new Date().toISOString() });
     const res = applyMissionComplete(player, m, settings);
     setPlayer(res.player);
+    if (!res.leveledUp && !res.bossDefeated) play('check');
     const extras = [`+${m.reward.xp} XP`, m.reward.coins ? `+${m.reward.coins} 🪙` : '']
       .concat(res.leveledUp ? [`🎉 Subiu para o nível ${res.player.level}!`] : [])
       .concat(res.bossDefeated ? ['⚔️ Boss derrotado! +50 🪙'] : [])

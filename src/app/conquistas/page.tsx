@@ -3,6 +3,7 @@
 import { useStore } from '@/lib/store';
 import { ACHIEVEMENTS } from '@/lib/constants';
 import { checkAchievement, addCoins } from '@/lib/engine';
+import { play } from '@/lib/sound';
 
 export default function ConquistasPage() {
   const player = useStore((s) => s.player);
@@ -12,6 +13,7 @@ export default function ConquistasPage() {
 
   const resgatar = (id: string, reward: number) => {
     if (achievements.includes(id)) return;
+    play('fanfare');
     if (reward > 0) setPlayer(addCoins(player, reward));
     setAchievements([...achievements, id]);
   };

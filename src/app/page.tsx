@@ -7,6 +7,7 @@ import { PET_STAGES } from '@/lib/constants';
 import { revivePlayer, applyMissionComplete, today } from '@/lib/engine';
 import { useReward, RewardBanner } from '@/components/RewardFeedback';
 import ShareProgressButton from '@/components/ShareCard';
+import { play } from '@/lib/sound';
 
 const MILESTONES = [
   { d: 1, label: 'Primeiro dia', icon: '🚩' },
@@ -70,6 +71,7 @@ export default function DashboardPage() {
     updateMission(id, { done: true, completedAt: new Date().toISOString() });
     const res = applyMissionComplete(player, m, settings);
     setPlayer(res.player);
+    if (!res.leveledUp && !res.bossDefeated) play('check');
     flash(`${m.title}: +${m.reward.xp} XP${m.reward.coins ? ` · +${m.reward.coins} 🪙` : ''}${res.leveledUp ? ` · 🎉 Nível ${res.player.level}!` : ''}`);
   };
 

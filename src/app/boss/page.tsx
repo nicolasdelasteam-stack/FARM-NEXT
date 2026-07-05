@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { uid, today, addCoins, addXP, refreshBosses, applyBossPenalties } from '@/lib/engine';
+import { play } from '@/lib/sound';
 import { BOSS_DIFICULDADE, BOSS_PERIODO, REWARD_ITEMS } from '@/lib/constants';
 import type { Boss } from '@/lib/types';
 
@@ -74,6 +75,7 @@ export default function BossPage() {
   const derrotar = (id: string) => {
     const b = boss.bosses.find((x) => x.id === id);
     if (!b || b.derrotado) return;
+    play('boss');
     let p = player;
     if (b.recompensaCoins > 0) p = addCoins(p, b.recompensaCoins);
     if (b.recompensaXp > 0) p = addXP(p, b.recompensaXp, settings);
